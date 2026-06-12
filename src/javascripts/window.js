@@ -12,7 +12,18 @@ let activeResizingWindow = null;
 function syncDockLight(name, on) {
   if (window.appStatus) window.appStatus[name] = on;
   if (name === "启动台") return;   // 启动台是覆盖层，macOS 不显示运行灯
-  const img = document.querySelector(`#dock img[alt="${name}"]`);
+  let img = document.querySelector(`#dock img[alt="${name}"]`);
+  if (!img && on) {
+    // 不在 Dock 的应用（如桌面/访达双击文件打开）临时加入，关闭后随 transient 标记移除
+    // 动态 import 避免与 dock.js 的静态循环依赖
+    import("./dock.js").then(m => {
+      m.addToDock(name);
+      const di = document.querySelector(`#dock img[alt="${name}"]`);
+      const light = di && di.closest(".container").querySelector(".light");
+      if (light) light.classList.add("on");
+    });
+    return;
+  }
   if (!img) return;
   const container = img.closest(".container");
   if (!on && container && container.dataset.transient === "1") {
@@ -70,6 +81,9 @@ export function create(file, name, light = null, centered = false) {
           resizer.className = "resizer";
           newWin.appendChild(resizer);
           addResizeListener(newWin, resizer);
+
+          // 新窗口即获得焦点:置顶并把菜单栏切到该应用(macOS 行为)
+          bringToFront(newWin, name);
         }
         let script = document.createElement("script");
         script.src = `./src/javascripts/apps/${cleanFile}.js${bust}`;
