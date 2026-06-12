@@ -24,14 +24,14 @@ function openFinderAt(path) {
 }
 
 function openTextEdit(path) {
-    // .md 路由到 Markdown 编辑器(Typora 风即时渲染),其余文本走文本编辑
+    // .md 路由到 Typora(Vditor 即时渲染),其余文本走文本编辑
     if (/\.md$/i.test(path)) {
-        if (document.getElementById("Markdown")) {
+        if (document.getElementById("Typora")) {
             document.dispatchEvent(new CustomEvent("markdown-open", { detail: path }));
-            if (window.moduleItems) window.moduleItems.create("./assets/apps/Markdown.html", "Markdown");
+            if (window.moduleItems) window.moduleItems.create("./assets/apps/Typora.html", "Typora");
         } else {
             window.__openFile = path;
-            if (window.moduleItems) window.moduleItems.create("./assets/apps/Markdown.html", "Markdown");
+            if (window.moduleItems) window.moduleItems.create("./assets/apps/Typora.html", "Typora");
         }
         return;
     }

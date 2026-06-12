@@ -77,7 +77,7 @@
 - **Python 实验室** —— [Pyodide](https://github.com/pyodide/pyodide)（CPython→Wasm）：浏览器里跑 NumPy / pandas / Matplotlib / scikit-learn，内置线性回归、KMeans、决策边界、梯度下降可视化等 ML 教学示例，import 即自动装包
 - **AI 工具箱** —— [transformers.js](https://github.com/huggingface/transformers.js)（ONNX Runtime：**WebGPU 优先**/Wasm 回退）：情感分析、中英翻译、句子 Embedding 相似度、图像分类、**Whisper 语音识别**（麦克风/音频文件，覆盖 whisper.cpp 场景），模型按需下载并缓存
 - **JupyterLite** —— [jupyterlite](https://github.com/jupyterlite/jupyterlite)：零后端 Jupyter Notebook（Pyodide 内核），笔记本存浏览器本地
-- **Markdown** —— [Vditor](https://github.com/Vanessa219/vditor)：Typora 风格即时渲染编辑器，对接文件系统（⌘S 存 /Documents、访达双击 .md 直达），支持公式/Mermaid/导出
+- **Typora** —— [Vditor](https://github.com/Vanessa219/vditor)：Typora 风格即时渲染 Markdown 编辑器，对接文件系统（⌘S 存 /Documents、访达双击 .md 直达、桌面/访达右键可新建 Markdown 文档），支持公式/Mermaid/导出
 - **复古游戏厅** —— [EmulatorJS](https://github.com/EmulatorJS/EmulatorJS)（RetroArch→Wasm）：NES/SNES/GB/GBA/MD/街机等，载入自备 ROM 即玩
 
 ### 🎨 视觉与性能

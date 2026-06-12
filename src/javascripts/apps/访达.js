@@ -122,14 +122,14 @@ import { bringToFront } from "../window.js";
             window.moduleItems.create("./assets/apps/文本编辑.html", "文本编辑");
         }
     }
-    // .md 用 Markdown 编辑器(Typora 风即时渲染)打开
+    // .md 用 Typora(Vditor 即时渲染)打开
     function openInMarkdown(path) {
-        if (document.getElementById("Markdown")) {
+        if (document.getElementById("Typora")) {
             document.dispatchEvent(new CustomEvent("markdown-open", { detail: path }));
-            window.moduleItems.create("./assets/apps/Markdown.html", "Markdown");
+            window.moduleItems.create("./assets/apps/Typora.html", "Typora");
         } else {
             window.__openFile = path;
-            window.moduleItems.create("./assets/apps/Markdown.html", "Markdown");
+            window.moduleItems.create("./assets/apps/Typora.html", "Typora");
         }
     }
     function openEntry(entry, path) {
@@ -262,6 +262,12 @@ import { bringToFront } from "../window.js";
             {
                 label: "新建文本文件", action: async () => {
                     try { await vfs.writeText(joinPath(currentPath, await uniqueName("未命名", ".txt")), ""); }
+                    catch (err) { alert("新建文件失败: " + err.message); }
+                }
+            },
+            {
+                label: "新建 Markdown 文档", action: async () => {
+                    try { await vfs.writeText(joinPath(currentPath, await uniqueName("未命名", ".md")), ""); }
                     catch (err) { alert("新建文件失败: " + err.message); }
                 }
             },

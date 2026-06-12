@@ -75,6 +75,10 @@ document.addEventListener("contextmenu", (e) => {
                 label: "新建文本文档",
                 action: async () => vfs.writeText(joinPath('/Desktop', await uniqueDesktopName('未命名', '.txt')), ''),
             },
+            {
+                label: "新建 Markdown 文档",
+                action: async () => vfs.writeText(joinPath('/Desktop', await uniqueDesktopName('未命名', '.md')), ''),
+            },
             { type: "separator" },
             { label: "显示简介", disabled: true },
             { type: "separator" },
