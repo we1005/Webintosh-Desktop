@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mac Firmware</title>
+    <link rel="stylesheet" href="../assets/styles/firmware.css" />
+    <link rel="stylesheet" href="../assets/styles/font.css" />
+    <!-- <link rel="stylesheet" href="../assets/styles/boot.css" /> -->
+</head>
+
+<body>
+    <img logo src="../assets/images/icon.no.software.png" />
+    <div frame>
+        <p state>support.apple.com/mac/startup</p>
+    </div>
+
+    <script type="module" src="../src/js/firmware.js"></script>
+    <script type="module" src="../src/js/element.js"></script>
+    <script type="module" src="../src/js/url.js"></script>
+    <script>
+        const audio = new Audio('../assets/sounds/Startup.mp3');
+        audio.volume = 1;
+        setTimeout(() => {
+            audio.play()
+        }, 250);
+    </script>
+</body>
+
+</html>

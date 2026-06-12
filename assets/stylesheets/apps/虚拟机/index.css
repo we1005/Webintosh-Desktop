@@ -1,0 +1,69 @@
+/* 虚拟机（v86 / FreeDOS）窗口样式 —— 深色 macOS 风格 */
+
+.vmwin.window {
+    width: min(780px, calc(100vw - 80px));
+    height: min(560px, calc(100vh - 140px));
+    top: calc(50% - min(280px, (100vh - 140px) / 2));
+    left: calc(50% - min(390px, (100vw - 80px) / 2));
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 12px;
+    background: #1c1c1e;
+}
+
+.vmwin .topbar {
+    flex: none;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    background: linear-gradient(180deg, rgba(56, 56, 58, 0.98), rgba(44, 44, 46, 0.98));
+    border-bottom: 1px solid rgba(0, 0, 0, 0.55);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.vmwin .topbar .wintools {
+    display: inline-flex;
+    margin-left: 10px;
+    z-index: 2;
+}
+
+.vmwin .topbar .wintools .red,
+.vmwin .topbar .wintools .yellow,
+.vmwin .topbar .wintools .green {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: solid 0.5px rgba(0, 0, 0, 0.25);
+}
+
+.vmwin .topbar .wintools .red { background: #ff5f57; }
+.vmwin .topbar .wintools .yellow { background: #febc2e; }
+.vmwin .topbar .wintools .green { background: #28c840; margin-right: 0; }
+
+.vmwin .topbar .title {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.82);
+    font-family: 'SFPro-Semibold', 'PingFangSC-Semibold';
+    pointer-events: none;
+}
+
+.vmwin .frame {
+    flex: 1;
+    min-height: 0;
+    background: #000;
+}
+
+.vmwin .frame iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    background: #000;
+}

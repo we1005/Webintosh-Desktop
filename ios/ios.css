@@ -1,0 +1,597 @@
+/* ============================================================
+   Webintosh · iOS 7 移动端模式（iPhone 5s）
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body { height: 100%; }
+
+body {
+    font-family: -apple-system, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", sans-serif;
+    background: radial-gradient(120% 120% at 50% 0%, #34373e 0%, #1b1c20 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+button { font-family: inherit; border: none; background: none; cursor: pointer; }
+
+/* ---------------- iPhone 5s 深空灰机身（桌面浏览器） ---------------- */
+
+.device {
+    position: relative;
+    width: 372px;
+    height: 762px;
+    padding: 97px 26px;
+    border-radius: 58px;
+    background: linear-gradient(180deg, #4a4d54 0%, #2e3036 8%, #232429 92%, #17181b 100%);
+    box-shadow:
+        inset 0 0 0 2px rgba(255, 255, 255, 0.08),
+        inset 0 0 0 5px rgba(0, 0, 0, 0.55),
+        0 30px 70px rgba(0, 0, 0, 0.65),
+        0 4px 14px rgba(0, 0, 0, 0.5);
+    flex-shrink: 0;
+}
+
+.device-camera {
+    position: absolute;
+    top: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #2c4a6e 0%, #0a1320 65%);
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.8);
+}
+
+.device-speaker {
+    position: absolute;
+    top: 58px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 7px;
+    border-radius: 4px;
+    background: #0c0d10;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.device-home {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 35%, #2c2d32 0%, #141519 80%);
+    box-shadow:
+        inset 0 0 0 2px rgba(190, 195, 205, 0.35),
+        inset 0 0 0 3.5px rgba(0, 0, 0, 0.7),
+        inset 0 2px 5px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    padding: 0;
+}
+
+.device-home span { display: none; }
+
+/* ---------------- 屏幕 ---------------- */
+
+.screen {
+    position: relative;
+    width: 320px;
+    height: 568px;
+    background: #000;
+    overflow: hidden;
+    border-radius: 2px;
+    box-shadow: 0 0 0 3px #000;
+}
+
+/* 真触屏设备：全屏铺满，隐藏机身 */
+@media (pointer: coarse) {
+    body { background: #000; }
+    .device {
+        width: 100%;
+        height: 100dvh;
+        padding: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: #000;
+    }
+    .device-camera, .device-speaker, .device-home { display: none; }
+    .screen {
+        width: 100%;
+        height: 100dvh;
+        border-radius: 0;
+        box-shadow: none;
+    }
+}
+
+/* ---------------- 状态栏 ---------------- */
+
+.statusbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    color: #fff;
+    font-size: 12px;
+    letter-spacing: 0;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.25);
+}
+
+.sb-left, .sb-right { display: flex; align-items: center; gap: 4px; }
+.sb-right { margin-left: auto; }
+
+.sb-time {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.carrier { font-size: 11px; }
+
+.sig { display: inline-flex; gap: 2.5px; align-items: center; }
+.sig i {
+    width: 5.5px;
+    height: 5.5px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    display: inline-block;
+}
+.sig i.on { background: #fff; border-color: #fff; }
+
+.sb-batt-text { font-size: 11px; }
+
+.batt { display: inline-flex; align-items: center; }
+.batt-body {
+    width: 21px;
+    height: 9.5px;
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    border-radius: 2.5px;
+    padding: 1px;
+    display: inline-block;
+}
+.sb-batt-level {
+    display: block;
+    height: 100%;
+    width: 100%;
+    border-radius: 1px;
+    background: #fff;
+    transition: width 0.4s;
+}
+.sb-batt-level.charging { background: #4cd964; }
+.batt-cap {
+    width: 1.5px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 0 1px 1px 0;
+    margin-left: 1px;
+}
+
+/* ---------------- 锁屏 ---------------- */
+
+.lockscreen {
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    touch-action: none;
+    will-change: transform, opacity;
+    overflow: hidden;
+}
+
+.lock-wallpaper {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(90% 60% at 75% 12%, rgba(94, 160, 255, 0.55) 0%, rgba(94, 160, 255, 0) 60%),
+        radial-gradient(100% 70% at 15% 85%, rgba(38, 208, 206, 0.5) 0%, rgba(38, 208, 206, 0) 65%),
+        radial-gradient(60% 45% at 50% 50%, rgba(140, 90, 220, 0.35) 0%, rgba(140, 90, 220, 0) 70%),
+        linear-gradient(165deg, #0d1b3e 0%, #25316e 45%, #103a5c 100%);
+}
+
+.lock-clock {
+    position: absolute;
+    top: 74px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.18);
+}
+
+.lock-time {
+    font-size: 78px;
+    font-weight: 100;
+    line-height: 1;
+    letter-spacing: -2px;
+    font-variant-numeric: tabular-nums;
+}
+
+.lock-date {
+    margin-top: 6px;
+    font-size: 17px;
+    font-weight: 200;
+}
+
+.slide-hint {
+    position: absolute;
+    bottom: 26px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    pointer-events: none;
+}
+
+.slide-text {
+    display: inline-block;
+    font-size: 22px;
+    font-weight: 200;
+    color: transparent;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.45) 38%,
+        #ffffff 50%,
+        rgba(255, 255, 255, 0.45) 62%
+    );
+    background-size: 220% 100%;
+    background-position: 150% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: slide-shimmer 2.6s linear infinite;
+}
+
+@keyframes slide-shimmer {
+    from { background-position: 160% 0; }
+    to   { background-position: -60% 0; }
+}
+
+/* ---------------- SpringBoard ---------------- */
+
+.springboard {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    opacity: 0;
+    transform: scale(1.2);
+    pointer-events: none;
+    will-change: transform, opacity;
+    overflow: hidden;
+}
+
+.springboard.active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    transition: transform 0.36s cubic-bezier(0.25, 0.9, 0.35, 1), opacity 0.36s ease;
+}
+
+.springboard.zoomed {
+    transition: transform 0.38s cubic-bezier(0.32, 0.72, 0.35, 1), opacity 0.38s ease;
+    transform: scale(1.18);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sb-wallpaper {
+    position: absolute;
+    inset: -14px;
+    background:
+        radial-gradient(110% 75% at 82% 8%, rgba(120, 215, 245, 0.75) 0%, rgba(120, 215, 245, 0) 55%),
+        radial-gradient(110% 90% at 12% 92%, rgba(46, 220, 180, 0.65) 0%, rgba(46, 220, 180, 0) 60%),
+        radial-gradient(70% 55% at 38% 38%, rgba(150, 110, 235, 0.45) 0%, rgba(150, 110, 235, 0) 70%),
+        linear-gradient(160deg, #3a7bd5 0%, #6457c6 48%, #28b8d8 100%);
+    will-change: transform;
+}
+
+.icon-grid {
+    position: absolute;
+    top: 32px;
+    left: 0;
+    right: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    row-gap: 15px;
+    padding: 0 8px;
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+}
+
+.app:active .icon { filter: brightness(0.78); }
+
+.icon {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 22%;
+    overflow: hidden;
+    box-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.22);
+    display: block;
+    flex-shrink: 0;
+}
+
+.icon svg { width: 100%; height: 100%; display: block; }
+
+.label {
+    font-size: 11px;
+    color: #fff;
+    line-height: 13px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.38);
+    max-width: 72px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 图标底色 */
+.ic-messages { background: linear-gradient(180deg, #5bf777 0%, #0abc28 100%); }
+.ic-camera   { background: linear-gradient(180deg, #ededee 0%, #aeb2ba 100%); }
+.ic-weather  { background: linear-gradient(180deg, #4aa6f2 0%, #1d62f0 100%); }
+.ic-clock    { background: #fff; }
+.ic-photos   { background: #fff; }
+.ic-maps     { background: #edebdc; }
+.ic-videos   { background: linear-gradient(180deg, #5fc9f8 0%, #1d77ef 100%); }
+.ic-notes    { background: #fcfbf2; }
+.ic-reminders{ background: #fff; }
+.ic-stocks   { background: linear-gradient(180deg, #3c3c40 0%, #101013 100%); }
+.ic-safari   { background: linear-gradient(180deg, #f4faff 0%, #c9e2f6 100%); }
+.ic-phone    { background: linear-gradient(180deg, #61f06f 0%, #0cc01f 100%); }
+.ic-mail     { background: linear-gradient(180deg, #6fcdf7 0%, #1a6fe8 100%); }
+.ic-music    { background: linear-gradient(180deg, #fc6e8a 0%, #f0223f 100%); }
+.ic-spotify  { background: #16151a; }
+
+/* 日历图标（真实日期） */
+.ic-calendar {
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.cal-week {
+    font-size: 9.5px;
+    color: #fc3158;
+    line-height: 1;
+    margin-top: 3px;
+}
+.cal-day {
+    font-size: 34px;
+    font-weight: 200;
+    color: #1c1c1e;
+    line-height: 1.05;
+    letter-spacing: -1px;
+}
+
+/* Dock（毛玻璃） */
+.dock {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 91px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: start;
+    padding-top: 8px;
+}
+
+.dock-bg {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.18);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    backdrop-filter: blur(22px) saturate(160%);
+    border-top: 0.5px solid rgba(255, 255, 255, 0.22);
+}
+
+.dock .app { position: relative; }
+
+/* ---------------- 应用视图 ---------------- */
+
+.app-view {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    background: #000;
+    transform: scale(0.2);
+    opacity: 0;
+    will-change: transform, opacity;
+    /* 仅在 .open 时接收点击；打开/关闭动画期间让点击穿透到桌面，
+       否则关闭动画的 ~340ms 内整层覆盖 SpringBoard 会吞掉图标点击。 */
+    pointer-events: none;
+}
+.app-view.open { pointer-events: auto; }
+
+.app-view.open {
+    transition: transform 0.38s cubic-bezier(0.32, 0.72, 0.35, 1), opacity 0.3s ease;
+    transform: scale(1);
+    opacity: 1;
+}
+
+.app-view.closing {
+    transition: transform 0.32s cubic-bezier(0.5, 0, 0.7, 0.4), opacity 0.3s ease;
+    transform: scale(0.2);
+    opacity: 0;
+}
+
+.app-view iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #000;
+}
+
+.home-pill {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 26px;
+    z-index: 60;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 7px;
+}
+
+.home-pill span {
+    display: block;
+    width: 110px;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(160, 160, 165, 0.62);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.35);
+    transition: background 0.2s;
+}
+
+.home-pill:active span { background: rgba(220, 220, 225, 0.85); }
+
+/* ---------------- 内置 Safari 页 ---------------- */
+
+.safari-page {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.safari-page[hidden] { display: none; }
+
+.safari-top {
+    padding: 24px 8px 7px;
+    background: rgba(248, 248, 248, 0.97);
+    border-bottom: 0.5px solid #b2b2b2;
+}
+
+.safari-url {
+    height: 27px;
+    border-radius: 6px;
+    background: #e4e4e8;
+    color: #1c1c1e;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.safari-lock { width: 10px; height: 12px; }
+
+.safari-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 34px;
+    background: #fff;
+}
+
+.safari-err-title {
+    font-size: 21px;
+    font-weight: 600;
+    color: #5a5a5e;
+    margin-bottom: 10px;
+}
+
+.safari-err-msg {
+    font-size: 14px;
+    line-height: 1.55;
+    color: #8e8e93;
+}
+
+.safari-toolbar {
+    height: 44px;
+    background: rgba(248, 248, 248, 0.97);
+    border-top: 0.5px solid #b2b2b2;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px 8px;
+}
+
+.safari-toolbar .tb { width: 22px; height: 22px; color: #c7c7cc; }
+.safari-toolbar .tb.on { color: #007aff; }
+
+/* ---------------- iOS 7 弹窗 ---------------- */
+
+.alert-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0, 0, 0, 0.38);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+/* display:flex 会覆盖 hidden 属性的 UA display:none，必须显式归位，
+   否则透明遮罩常驻拦截整屏指针事件（会挡住滑动解锁） */
+.alert-backdrop[hidden] { display: none; }
+
+.alert-backdrop.show { opacity: 1; }
+
+.ios-alert {
+    width: 270px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(250, 250, 250, 0.96);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    text-align: center;
+    transform: scale(1.16);
+    transition: transform 0.22s cubic-bezier(0.25, 1.3, 0.5, 1);
+}
+
+.alert-backdrop.show .ios-alert { transform: scale(1); }
+
+.ios-alert-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #000;
+    padding: 19px 16px 4px;
+}
+
+.ios-alert-msg {
+    font-size: 13px;
+    line-height: 1.45;
+    color: #1c1c1e;
+    padding: 0 16px 19px;
+}
+
+.ios-alert-btn {
+    display: block;
+    width: 100%;
+    height: 44px;
+    font-size: 17px;
+    color: #007aff;
+    border-top: 0.5px solid rgba(0, 0, 0, 0.2);
+    background: transparent;
+}
+
+.ios-alert-btn:active { background: rgba(0, 0, 0, 0.07); }

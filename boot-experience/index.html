@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎访问 Webintosh | Welcome to Webintosh</title>
+    <script>
+        // 触屏小屏设备直接进入 iPhone 5s（iOS 7）模式；加 ?desktop 强制桌面流程
+        if (matchMedia('(pointer: coarse)').matches
+            && Math.min(screen.width, screen.height) < 800
+            && !location.search.includes('desktop')) {
+            location.replace('../ios/');
+        }
+    </script>
+    <link rel="stylesheet" href="assets/styles/font.css" />
+    <link rel="stylesheet" href="assets/styles/oobe.css" />
+    <!-- <link rel="stylesheet" href="assets/styles/cursor.css" /> -->
+</head>
+
+<body>
+    <div container>
+        <div main>
+            <img src="assets/images/Sequoia.png" />
+            <p title>欢迎访问 Webintosh</p>
+            <p subtitle>此页面仍在开发!</p>
+            <p description>
+                此网页会在您的浏览器中带来几乎真实的 <a link href="https://apple.com.cn/mac">Mac(intosh)</a> 体验。<br />
+                登录密码可以使用下列密码的任选其一来登录: Ventura，Sonoma，Sequoia。那么点击继续按钮来享受丝滑的 Mac 体验吧！<br />
+                如果您需要类似 Mac 的 Boot Chime 自检通过音效，请在点击按钮后做一些与网页的交互来绕过自动播放限制。
+            </p>
+            <div bottom-content>
+                <hr />
+                <div inner-content>
+                    <widget-button style="transform: scale(1.2)" command="getStarted()">继续</widget-button>
+                </div>
+            </div>
+            <!-- <p license>Made with html by CodeCrafter-TL ❤</p> -->
+        </div>
+    </div>
+    <script src="config.js"></script>
+    <script>
+        function getStarted() {
+            setTimeout(function () {
+                // 主题由 config.js 决定（默认 black），可被 URL ?theme= 覆盖
+                window.location = 'firmware/?theme=' + window.resolveBootTheme();
+            }, 50);
+        }
+
+        window.onload = () => {
+            document.getElementById('cursor').src = "assets/images/Cursor.svg";
+        };
+    </script>
+    <script type="module" src="src/js/ui.js"></script>
+    <!-- <script src="src/js/cursor.js"></script> -->
+</body>
+
+</html>

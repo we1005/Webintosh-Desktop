@@ -1,0 +1,80 @@
+* {
+    font-family: 'SFPro-Regular', 'PingFang-Regular';
+}
+
+.window {
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: #fefefe;
+    padding: 24px 12px;
+}
+
+.wintools {
+    z-index: 10;
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    width: auto;
+    height: auto;
+    display: inline-flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.red {
+    cursor: default;
+    font-size: 7px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ff5f57;
+    margin-right: 6px;
+}
+
+.yellow {
+    cursor: default;
+    font-size: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #febc2e;
+    margin-right: 6px;
+}
+
+.green {
+    cursor: default;
+    font-size: 7px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #28c840;
+}
+
+.window p {
+    margin: 0;
+    /* color: black; */
+}
+
+.shields {
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+}

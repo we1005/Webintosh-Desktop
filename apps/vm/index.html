@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>虚拟机 — FreeDOS</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* ---------- 顶部工具条 ---------- */
+    .toolbar {
+        flex: none;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        background: linear-gradient(180deg, #323234, #28282a);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        margin-right: auto;
+    }
+
+    .status .dot {
+        flex: none;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #98989d;
+        box-shadow: 0 0 0 0 transparent;
+    }
+
+    .status .dot.booting {
+        background: #febc2e;
+        animation: vm-pulse 1s ease-in-out infinite;
+    }
+
+    .status .dot.running {
+        background: #30d158;
+        box-shadow: 0 0 6px rgba(48, 209, 88, 0.7);
+    }
+
+    .status .dot.paused { background: #febc2e; }
+    .status .dot.error { background: #ff453a; }
+
+    @keyframes vm-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.35; }
+    }
+
+    .status .text {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.75);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .toolbar button {
+        flex: none;
+        height: 24px;
+        padding: 0 11px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 6px;
+        background: linear-gradient(180deg, #59595e, #48484c);
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 12px;
+        font-family: inherit;
+        line-height: 22px;
+        cursor: pointer;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+        outline: none;
+    }
+
+    .toolbar button:hover:not(:disabled) {
+        background: linear-gradient(180deg, #67676c, #555559);
+    }
+
+    .toolbar button:active:not(:disabled) {
+        background: linear-gradient(180deg, #3e3e42, #444448);
+    }
+
+    .toolbar button:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+
+    .toolbar .sep {
+        flex: none;
+        width: 1px;
+        height: 16px;
+        background: rgba(255, 255, 255, 0.14);
+        margin: 0 2px;
+    }
+
+    /* ---------- 屏幕区域 ---------- */
+    .stage {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: radial-gradient(ellipse at center, #101010 0%, #000 75%);
+    }
+
+    #screen_container {
+        position: relative;
+        outline: none;
+        cursor: text;
+        transform-origin: center center;
+        background: #000;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+    }
+
+    #screen_container > div {
+        color: #d8d8d8;
+        background: #000;
+        text-shadow: 0 0 2px rgba(216, 216, 216, 0.35);
+    }
+
+    #screen_container canvas {
+        image-rendering: pixelated;
+    }
+
+    /* ---------- 错误兜底 ---------- */
+    .errorbox {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 30px;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.88);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+
+    .errorbox .glyph { font-size: 34px; }
+
+    .errorbox .etitle {
+        font-size: 15px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.92);
+    }
+
+    .errorbox .edetail {
+        font-size: 12px;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.55);
+        max-width: 460px;
+        word-break: break-all;
+    }
+
+    .errorbox button {
+        margin-top: 8px;
+        height: 26px;
+        padding: 0 16px;
+        border: none;
+        border-radius: 6px;
+        background: #0a84ff;
+        color: #fff;
+        font-size: 12px;
+        font-family: inherit;
+        cursor: pointer;
+    }
+
+    .errorbox button:hover { background: #2294ff; }
+
+    [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+    <div class="toolbar">
+        <div class="status">
+            <span class="dot booting" id="statusDot"></span>
+            <span class="text" id="statusText">正在加载模拟器…</span>
+        </div>
+        <button id="btnPause" disabled>暂停</button>
+        <button id="btnRestart" disabled>重启</button>
+        <button id="btnCad" disabled title="发送 Ctrl+Alt+Del 组合键">Ctrl+Alt+Del</button>
+        <div class="sep"></div>
+        <button id="btnLoad" title="选择 .img 软盘镜像或 .iso 光盘镜像">载入镜像…</button>
+        <input type="file" id="fileInput" accept=".img,.ima,.iso,.bin,.dsk" hidden>
+    </div>
+
+    <div class="stage" id="stage">
+        <!-- v86 官方屏幕容器结构 -->
+        <div id="screen_container" tabindex="0">
+            <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
+            <canvas style="display: none"></canvas>
+        </div>
+
+        <div class="errorbox" id="errorBox" hidden>
+            <div class="glyph">🖥️</div>
+            <div class="etitle" id="errorTitle">虚拟机启动失败</div>
+            <div class="edetail" id="errorDetail"></div>
+            <button id="btnRetry">重试</button>
+        </div>
+    </div>
+
+    <script src="./libv86.js"></script>
+    <script>
+    (function () {
+        "use strict";
+
+        var statusDot = document.getElementById("statusDot");
+        var statusText = document.getElementById("statusText");
+        var btnPause = document.getElementById("btnPause");
+        var btnRestart = document.getElementById("btnRestart");
+        var btnCad = document.getElementById("btnCad");
+        var btnLoad = document.getElementById("btnLoad");
+        var fileInput = document.getElementById("fileInput");
+        var stage = document.getElementById("stage");
+        var screenContainer = document.getElementById("screen_container");
+        var errorBox = document.getElementById("errorBox");
+        var errorTitle = document.getElementById("errorTitle");
+        var errorDetail = document.getElementById("errorDetail");
+        var btnRetry = document.getElementById("btnRetry");
+
+        var emulator = null;
+        var running = false;            // 模拟器 CPU 是否在跑
+        var paused = false;             // 用户主动暂停
+        var stoppedByHidden = false;    // 因页面不可见而自动暂停
+        var failed = false;
+
+        // 当前启动介质：默认 FreeDOS 软盘
+        var media = {
+            fda: { url: "./images/freedos722.img" },
+            cdrom: null,
+            label: "FreeDOS",
+        };
+
+        function setStatus(kind, text) {
+            statusDot.className = "dot " + kind;
+            statusText.textContent = text;
+        }
+
+        function mediaSuffix() {
+            return media.label === "FreeDOS" ? "" : " — " + media.label;
+        }
+
+        function showError(title, detail) {
+            failed = true;
+            errorTitle.textContent = title;
+            errorDetail.textContent = detail || "";
+            errorBox.hidden = false;
+            setStatus("error", "出错");
+            btnPause.disabled = btnRestart.disabled = btnCad.disabled = true;
+        }
+
+        function hideError() {
+            failed = false;
+            errorBox.hidden = true;
+        }
+
+        // ---------- 屏幕自适应缩放 ----------
+        function fitScreen() {
+            var canvas = screenContainer.querySelector("canvas");
+            var textDiv = screenContainer.children[0];
+            var graphical = canvas && canvas.style.display !== "none";
+            var src = graphical ? canvas : textDiv;
+            var w = src.offsetWidth;
+            var h = src.offsetHeight;
+            if (!w || !h) return;
+            var availW = stage.clientWidth - 16;
+            var availH = stage.clientHeight - 16;
+            var scale = Math.min(availW / w, availH / h);
+            if (!isFinite(scale) || scale <= 0) scale = 1;
+            screenContainer.style.transform = "scale(" + scale + ")";
+        }
+
+        if (typeof ResizeObserver === "function") {
+            new ResizeObserver(fitScreen).observe(stage);
+        } else {
+            window.addEventListener("resize", fitScreen);
+        }
+        // 文本模式行列数变化没有标准回调，低频兜底刷新
+        setInterval(fitScreen, 1200);
+
+        // 点击屏幕聚焦，键盘输入交给 v86
+        stage.addEventListener("mousedown", function () {
+            screenContainer.focus();
+        });
+
+        // ---------- 模拟器生命周期 ----------
+        var VMClass = window.V86 || window.V86Starter;
+
+        function destroyEmulator() {
+            if (!emulator) return;
+            try {
+                if (typeof emulator.destroy === "function") emulator.destroy();
+                else emulator.stop();
+            } catch (e) { /* 忽略销毁阶段异常 */ }
+            emulator = null;
+            running = false;
+        }
+
+        function boot() {
+            hideError();
+            destroyEmulator();
+            paused = false;
+            stoppedByHidden = false;
+            btnPause.textContent = "暂停";
+            btnPause.disabled = btnRestart.disabled = btnCad.disabled = true;
+            setStatus("booting", "启动中…" + mediaSuffix());
+
+            if (!VMClass) {
+                showError("模拟器内核加载失败", "libv86.js 未能加载或未暴露 V86 构造器，请检查 apps/vm/libv86.js 是否可访问后重试。");
+                return;
+            }
+
+            var config = {
+                wasm_path: "./v86.wasm",
+                memory_size: 32 * 1024 * 1024,
+                vga_memory_size: 2 * 1024 * 1024,
+                screen_container: screenContainer,
+                bios: { url: "./seabios.bin" },
+                vga_bios: { url: "./vgabios.bin" },
+                autostart: true,
+            };
+            if (media.fda) config.fda = media.fda;
+            if (media.cdrom) config.cdrom = media.cdrom;
+
+            try {
+                emulator = new VMClass(config);
+            } catch (err) {
+                showError("虚拟机启动失败", String((err && err.message) || err));
+                return;
+            }
+
+            emulator.add_listener("emulator-started", function () {
+                running = true;
+                if (!paused && !failed) {
+                    btnPause.disabled = btnRestart.disabled = btnCad.disabled = false;
+                    setStatus("running", "运行中" + mediaSuffix());
+                }
+                fitScreen();
+            });
+
+            emulator.add_listener("emulator-stopped", function () {
+                running = false;
+            });
+
+            emulator.add_listener("download-error", function (e) {
+                var name = (e && e.file_name) || "未知文件";
+                showError("镜像或固件下载失败", "无法获取「" + name + "」，请确认文件存在且网络可用。");
+            });
+
+            emulator.add_listener("screen-set-size-graphical", fitScreen);
+            emulator.add_listener("screen-set-size-text", fitScreen);
+        }
+
+        // wasm 编译/实例化失败通常以未捕获的 Promise 拒绝形式出现
+        window.addEventListener("unhandledrejection", function (e) {
+            if (failed) return;
+            var msg = String((e.reason && e.reason.message) || e.reason || "");
+            if (/wasm|webassembly|instantiate|compile/i.test(msg)) {
+                showError("WebAssembly 初始化失败", msg);
+            }
+        });
+
+        // ---------- 工具条交互 ----------
+        btnPause.addEventListener("click", function () {
+            if (!emulator || failed) return;
+            if (paused) {
+                paused = false;
+                emulator.run();
+                btnPause.textContent = "暂停";
+                setStatus("running", "运行中" + mediaSuffix());
+            } else {
+                paused = true;
+                emulator.stop();
+                btnPause.textContent = "继续";
+                setStatus("paused", "已暂停" + mediaSuffix());
+            }
+        });
+
+        btnRestart.addEventListener("click", function () {
+            if (!emulator || failed) return;
+            if (paused) {
+                paused = false;
+                btnPause.textContent = "暂停";
+                emulator.run();
+            }
+            emulator.restart();
+            setStatus("booting", "重新启动…" + mediaSuffix());
+            setTimeout(function () {
+                if (running && !paused && !failed) {
+                    setStatus("running", "运行中" + mediaSuffix());
+                }
+            }, 1500);
+        });
+
+        btnCad.addEventListener("click", function () {
+            if (!emulator || failed) return;
+            // 按下 Ctrl、Alt、(扩展)Del，再逆序释放
+            emulator.keyboard_send_scancodes([
+                0x1d,        // Ctrl ↓
+                0x38,        // Alt ↓
+                0xe0, 0x53,  // Del ↓
+                0xe0, 0xd3,  // Del ↑
+                0xb8,        // Alt ↑
+                0x9d,        // Ctrl ↑
+            ]);
+            screenContainer.focus();
+        });
+
+        btnLoad.addEventListener("click", function () {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener("change", function () {
+            var file = fileInput.files && fileInput.files[0];
+            fileInput.value = "";
+            if (!file) return;
+            setStatus("booting", "读取镜像…");
+            file.arrayBuffer().then(function (buffer) {
+                if (/\.iso$/i.test(file.name)) {
+                    media = { fda: null, cdrom: { buffer: buffer }, label: file.name };
+                } else {
+                    media = { fda: { buffer: buffer }, cdrom: null, label: file.name };
+                }
+                boot();
+            }).catch(function (err) {
+                showError("镜像读取失败", String((err && err.message) || err));
+            });
+        });
+
+        btnRetry.addEventListener("click", function () {
+            boot();
+        });
+
+        // ---------- 可见性节流：窗口/标签不可见时暂停 CPU ----------
+        document.addEventListener("visibilitychange", function () {
+            if (!emulator || failed) return;
+            if (document.hidden) {
+                if (running && !paused) {
+                    stoppedByHidden = true;
+                    emulator.stop();
+                }
+            } else {
+                if (stoppedByHidden && !paused) {
+                    emulator.run();
+                }
+                stoppedByHidden = false;
+            }
+        });
+
+        boot();
+    })();
+    </script>
+</body>
+</html>

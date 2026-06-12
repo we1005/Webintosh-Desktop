@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify</title>
+    <link rel="stylesheet" href="../fonts.css" />
+    <style>
+        /* ============ Spotify 视觉系统 ============ */
+        :root {
+            --bg: #000;
+            --panel: #121212;
+            --elevated: #1f1f1f;
+            --highlight: #2a2a2a;
+            --text: #fff;
+            --subdued: #b3b3b3;
+            --green: #1ed760;
+            --green-press: #169c46;
+            --pad: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'SFPro-Regular', 'PingFang-Regular', -apple-system, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        b, h1, h2, .bold { font-family: 'SFPro-Bold', 'PingFang-Bold'; font-weight: normal; }
+
+        #app {
+            display: grid;
+            grid-template: 1fr auto / 300px 1fr;
+            gap: var(--pad);
+            width: 100%; height: 100%;
+            padding: var(--pad);
+        }
+
+        /* ============ 侧栏 ============ */
+        #sidebar {
+            grid-row: 1;
+            background: var(--panel);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .lib-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 16px 10px;
+            color: var(--subdued);
+            font-size: 15px;
+        }
+        .lib-head:hover { color: var(--text); }
+        .lib-head svg { flex: none; }
+        .lib-filters { display: flex; gap: 8px; padding: 4px 16px 10px; }
+        .chip {
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 16px;
+            background: var(--highlight);
+            color: var(--text);
+            cursor: pointer;
+        }
+        .chip.active { background: var(--text); color: #000; }
+        #libList { flex: 1; overflow-y: auto; padding: 0 8px 8px; min-height: 0; }
+        #libList::-webkit-scrollbar { width: 12px; }
+        #libList::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 6px; background-clip: padding-box; border: 3px solid transparent; }
+        .lib-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .lib-item:hover { background: #1a1a1a; }
+        .lib-item img { width: 48px; height: 48px; border-radius: 4px; flex: none; }
+        .lib-item .t { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lib-item .t.playing { color: var(--green); }
+        .lib-item .s { font-size: 13px; color: var(--subdued); margin-top: 2px; }
+
+        /* ============ 主区 ============ */
+        #main {
+            grid-row: 1;
+            position: relative;
+            background: var(--panel);
+            border-radius: 8px;
+            overflow: hidden;
+            min-height: 0;
+        }
+        #mainScroll {
+            position: absolute;
+            inset: 0;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+        #mainScroll::-webkit-scrollbar { width: 12px; }
+        #mainScroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 6px; background-clip: padding-box; border: 3px solid transparent; }
+        #heroGrad {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 332px;
+            background: linear-gradient(180deg, var(--hero, #535397) 0%, rgba(18,18,18,0) 100%);
+            opacity: .65;
+            transition: background 1s ease;
+            pointer-events: none;
+        }
+        #topbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 22px;
+        }
+        .nav-btn {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: rgba(0,0,0,.55);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .nav-btn.dim { color: var(--subdued); }
+        #avatar {
+            margin-left: auto;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: #ff7e33;
+            color: #000;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            font-family: 'SFPro-Bold', 'PingFang-Bold';
+            box-shadow: 0 0 0 4px rgba(0,0,0,.45);
+            cursor: pointer;
+        }
+        #content { position: relative; padding: 0 22px 110px; }
+        #greeting { font-size: 30px; margin: 6px 0 16px; }
+
+        /* 快捷格 */
+        #shortcuts {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 9px;
+        }
+        .shortcut {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            height: 56px;
+            border-radius: 5px;
+            background: rgba(255,255,255,.08);
+            overflow: hidden;
+            cursor: pointer;
+            transition: background .25s;
+        }
+        .shortcut:hover { background: rgba(255,255,255,.18); }
+        .shortcut img { width: 56px; height: 56px; flex: none; box-shadow: 4px 0 14px rgba(0,0,0,.4); }
+        .shortcut .t { font-size: 14.5px; padding: 0 12px; font-family: 'SFPro-Bold', 'PingFang-Bold'; }
+
+        /* 区块 */
+        .section { margin-top: 34px; }
+        .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .section-head h2 { font-size: 22px; letter-spacing: -.2px; }
+        .section-head .more { font-size: 13px; color: var(--subdued); cursor: pointer; }
+        .section-head .more:hover { text-decoration: underline; }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+            gap: 18px;
+        }
+        .card {
+            position: relative;
+            padding: 14px;
+            border-radius: 8px;
+            background: #181818;
+            cursor: pointer;
+            transition: background .3s;
+        }
+        .card:hover { background: #282828; }
+        .card .cover-wrap { position: relative; }
+        .card img.cover {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 6px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.5);
+            display: block;
+        }
+        /* 招牌交互：悬停浮出的绿色播放钮 */
+        .play-fab {
+            position: absolute;
+            right: 8px; bottom: 8px;
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            background: var(--green);
+            display: flex; align-items: center; justify-content: center;
+            color: #000;
+            box-shadow: 0 8px 16px rgba(0,0,0,.45);
+            opacity: 0;
+            transform: translate3d(0, 8px, 0);
+            transition: opacity .3s ease, transform .3s ease, scale .1s ease;
+            will-change: transform, opacity;
+        }
+        .card:hover .play-fab, .play-fab.always {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+        .play-fab:hover { scale: 1.05; background: #3be477; }
+        .play-fab:active { scale: .97; background: var(--green-press); }
+        .card .t { margin-top: 12px; font-size: 15px; font-family: 'SFPro-Bold', 'PingFang-Bold'; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card .s { margin-top: 4px; font-size: 13.5px; color: var(--subdued); }
+
+        /* 歌曲列表 */
+        #trackTable { margin-top: 10px; }
+        .tr {
+            display: grid;
+            grid-template-columns: 36px 1fr 1fr 80px;
+            align-items: center;
+            gap: 14px;
+            height: 56px;
+            padding: 0 14px;
+            border-radius: 5px;
+            color: var(--subdued);
+            font-size: 14px;
+        }
+        .tr.head {
+            height: 36px;
+            border-bottom: 1px solid rgba(255,255,255,.1);
+            border-radius: 0;
+            margin-bottom: 10px;
+            font-size: 12.5px;
+            letter-spacing: .6px;
+        }
+        .tr:not(.head):hover { background: rgba(255,255,255,.1); }
+        .tr .idx { text-align: center; font-variant-numeric: tabular-nums; position: relative; }
+        .tr .idx .num { display: inline; }
+        .tr .idx svg.playbtn { display: none; position: absolute; left: 50%; top: 50%; translate: -50% -50%; }
+        .tr:not(.head):hover .idx .num, .tr:not(.head):hover .idx .eq { display: none; }
+        .tr:not(.head):hover .idx svg.playbtn { display: block; color: #fff; }
+        .tr .main-cell { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .tr .main-cell img { width: 40px; height: 40px; border-radius: 4px; flex: none; }
+        .tr .main-cell .tt { color: var(--text); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tr.playing .main-cell .tt { color: var(--green); }
+        .tr .main-cell .ta { font-size: 13px; color: var(--subdued); margin-top: 2px; }
+        .tr .dur { text-align: right; font-variant-numeric: tabular-nums; }
+
+        /* 播放中的均衡器动画图标 —— 纯 transform */
+        .eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 13px; }
+        .eq i {
+            width: 3px; height: 13px;
+            background: var(--green);
+            transform-origin: bottom;
+            animation: eqb 1s ease-in-out infinite;
+        }
+        .eq i:nth-child(2) { animation-delay: -.45s; }
+        .eq i:nth-child(3) { animation-delay: -.75s; }
+        .eq i:nth-child(4) { animation-delay: -.2s; }
+        @keyframes eqb {
+            0%, 100% { transform: scaleY(.25); }
+            35%      { transform: scaleY(1); }
+            70%      { transform: scaleY(.45); }
+        }
+        .eq.paused i { animation-play-state: paused; transform: scaleY(.25); }
+
+        /* ============ 底部播放条 ============ */
+        #playerBar {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            height: 76px;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            padding: 0 12px;
+        }
+        #pbLeft { display: flex; align-items: center; gap: 13px; min-width: 0; }
+        #pbCover {
+            width: 56px; height: 56px;
+            border-radius: 5px;
+            background: #333;
+            flex: none;
+            will-change: transform;
+        }
+        #pbTitle { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #pbTitle:hover { text-decoration: underline; cursor: pointer; }
+        #pbArtist { font-size: 12px; color: var(--subdued); margin-top: 3px; }
+        .icon-btn {
+            background: none; border: none;
+            color: var(--subdued);
+            width: 32px; height: 32px;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            position: relative;
+        }
+        .icon-btn:hover { color: var(--text); }
+        .icon-btn.lit { color: var(--green); }
+        .icon-btn.lit::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 50%;
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: var(--green);
+            translate: -50% 0;
+        }
+        #pbCenter { display: flex; flex-direction: column; align-items: center; gap: 7px; width: min(620px, 38vw); }
+        #pbButtons { display: flex; align-items: center; gap: 14px; }
+        #playBtn {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            border: none;
+            background: var(--text);
+            color: #000;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: scale .08s ease;
+        }
+        #playBtn:hover { scale: 1.06; }
+        #playBtn:active { scale: .96; }
+        .timeline { display: flex; align-items: center; gap: 9px; width: 100%; font-size: 11.5px; color: var(--subdued); font-variant-numeric: tabular-nums; }
+
+        /* 进度条：填充用 scaleX —— 合成器路径 */
+        .slider {
+            position: relative;
+            flex: 1;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            touch-action: none;
+        }
+        .slider .rail {
+            width: 100%; height: 4px;
+            border-radius: 2px;
+            background: rgba(255,255,255,.3);
+            overflow: hidden;
+        }
+        .slider .fill {
+            width: 100%; height: 100%;
+            border-radius: 2px;
+            background: var(--text);
+            transform: scaleX(0);
+            transform-origin: left;
+            will-change: transform;
+        }
+        .slider:hover .fill, .slider.drag .fill { background: var(--green); }
+        .slider .thumb {
+            position: absolute;
+            left: -6px; top: 0;
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: var(--text);
+            box-shadow: 0 2px 6px rgba(0,0,0,.4);
+            opacity: 0;
+            will-change: transform;
+            pointer-events: none;
+        }
+        .slider:hover .thumb, .slider.drag .thumb { opacity: 1; }
+        #pbRight { display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
+        #volSlider { width: 100px; flex: none; }
+
+        /* ============ 全屏可视化 ============ */
+        #fullscreen {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: #000;
+            display: none;
+            opacity: 0;
+            transition: opacity .4s ease;
+        }
+        #fullscreen.show { display: block; }
+        #fullscreen.visible { opacity: 1; }
+        #fsCanvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+        #fsUI {
+            position: absolute;
+            left: 48px; bottom: 46px;
+            display: flex;
+            align-items: flex-end;
+            gap: 26px;
+        }
+        #fsCover {
+            width: 168px; height: 168px;
+            border-radius: 9px;
+            box-shadow: 0 24px 64px rgba(0,0,0,.6);
+            will-change: transform;
+        }
+        #fsMeta .label { font-size: 13px; color: rgba(255,255,255,.7); letter-spacing: 1.5px; }
+        #fsMeta .t { font-size: 46px; font-family: 'SFPro-Bold', 'PingFang-Bold'; margin: 8px 0 4px; text-shadow: 0 4px 30px rgba(0,0,0,.5); }
+        #fsMeta .a { font-size: 18px; color: rgba(255,255,255,.75); }
+        #fsClose {
+            position: absolute;
+            top: 22px; right: 26px;
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: rgba(0,0,0,.45);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            font-size: 17px;
+        }
+        #fsClose:hover { background: rgba(0,0,0,.7); }
+        #fsApi {
+            position: absolute;
+            right: 28px; bottom: 30px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,.4);
+            text-transform: uppercase;
+        }
+
+        /* 合成提示 */
+        #renderHint {
+            position: fixed;
+            left: 50%; bottom: 92px;
+            translate: -50% 0;
+            padding: 8px 18px;
+            border-radius: 18px;
+            background: var(--green);
+            color: #000;
+            font-size: 13px;
+            font-family: 'SFPro-Bold', 'PingFang-Bold';
+            opacity: 0;
+            transition: opacity .25s ease;
+            pointer-events: none;
+            z-index: 120;
+        }
+        #renderHint.show { opacity: 1; }
+
+        /* ============ 移动端（iOS 模式 / 窄屏）响应式 ============ */
+        @media (max-width: 560px) {
+            #app { grid-template: 1fr auto / 1fr; gap: 6px; padding: 6px; }  /* 单列：隐藏侧栏 */
+            #sidebar { display: none; }
+            #main { min-height: 0; }
+            #content { padding: 0 14px 100px; }
+            #greeting { font-size: 24px; }
+            #shortcuts { grid-template-columns: 1fr; }
+            .cards { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .section-head h2 { font-size: 18px; }
+            .tr { grid-template-columns: 28px 1fr 64px; gap: 10px; padding: 0 10px; height: 52px; }
+            .tr > :nth-child(3) { display: none; }    /* 隐藏专辑列 */
+            .tr.head { display: none; }
+            /* 底部播放条：三区压缩成两区，中间控制铺满 */
+            #playerBar { grid-template-columns: 1fr auto; height: 64px; padding: 0 10px; }
+            #pbCenter { width: auto; }
+            #pbCenter .timeline { display: none; }     /* 进度条在窄屏隐藏，保留主控 */
+            #pbRight { display: none; }                /* 队列/音量/全屏在窄屏隐藏 */
+            #pbLeft { gap: 9px; }
+            #pbCover { width: 44px; height: 44px; }
+            /* 全屏可视化覆盖层本身是 fixed inset:0，无需改 */
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <aside id="sidebar">
+            <div class="lib-head">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M3 22a1 1 0 0 1-1-1V3a1 1 0 0 1 2 0v18a1 1 0 0 1-1 1zM15.5 2.134A1 1 0 0 0 14 3v18a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V6.464a1 1 0 0 0-.5-.866l-6-3.464zM9 2a1 1 0 0 0-1 1v18a1 1 0 0 0 2 0V3a1 1 0 0 0-1-1z"/></svg>
+                <span class="bold">你的音乐库</span>
+                <svg style="margin-left:auto" viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75z"/></svg>
+            </div>
+            <div class="lib-filters">
+                <span class="chip active">专辑</span>
+                <span class="chip">歌单</span>
+                <span class="chip">艺人</span>
+            </div>
+            <div id="libList"></div>
+        </aside>
+
+        <section id="main">
+            <div id="mainScroll">
+                <div id="heroGrad"></div>
+                <div id="topbar">
+                    <span class="nav-btn"><svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M11.03.47a.75.75 0 0 1 0 1.06L4.56 8l6.47 6.47a.75.75 0 1 1-1.06 1.06L2.44 8 9.97.47a.75.75 0 0 1 1.06 0z"/></svg></span>
+                    <span class="nav-btn dim"><svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M4.97.47a.75.75 0 0 0 0 1.06L11.44 8l-6.47 6.47a.75.75 0 1 0 1.06 1.06L13.56 8 6.03.47a.75.75 0 0 0-1.06 0z"/></svg></span>
+                    <span id="avatar">W</span>
+                </div>
+                <div id="content">
+                    <h1 id="greeting">晚上好</h1>
+                    <div id="shortcuts"></div>
+                    <div class="section">
+                        <div class="section-head"><h2>为你打造</h2><span class="more">显示全部</span></div>
+                        <div class="cards" id="albumCards"></div>
+                    </div>
+                    <div class="section">
+                        <div class="section-head"><h2>全部歌曲</h2></div>
+                        <div id="trackTable"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer id="playerBar">
+            <div id="pbLeft">
+                <img id="pbCover" alt="" />
+                <div style="min-width:0">
+                    <div id="pbTitle">—</div>
+                    <div id="pbArtist">Webintosh</div>
+                </div>
+                <button class="icon-btn" id="likeBtn" title="添加到喜欢的歌曲">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path class="heart-line" d="M1.69 2A4.582 4.582 0 0 1 8 2.023 4.583 4.583 0 0 1 11.88.817h.002a4.618 4.618 0 0 1 3.782 3.65v.003a4.543 4.543 0 0 1-1.011 3.84L9.35 14.629a1.765 1.765 0 0 1-2.093.464 1.762 1.762 0 0 1-.605-.463L1.348 8.309A4.582 4.582 0 0 1 1.689 2zm3.158.252A3.082 3.082 0 0 0 2.49 7.337l.005.005L7.8 13.664a.264.264 0 0 0 .311.069.262.262 0 0 0 .09-.069l5.312-6.33a3.043 3.043 0 0 0 .68-2.573 3.118 3.118 0 0 0-2.551-2.463 3.079 3.079 0 0 0-2.612.816l-.007.007a1.093 1.093 0 0 1-1.532 0l-.009-.009a3.082 3.082 0 0 0-2.633-.86z"/></svg>
+                </button>
+            </div>
+            <div id="pbCenter">
+                <div id="pbButtons">
+                    <button class="icon-btn" id="shuffleBtn" title="随机播放">
+                        <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A2.25 2.25 0 0 1 .39 12.5H0V14h.391a3.75 3.75 0 0 0 2.873-1.34l6.173-7.356a2.25 2.25 0 0 1 1.724-.804h1.947l-1.017 1.018a.75.75 0 0 0 1.06 1.06L15.98 3.75 13.15.922zM.391 3.5H0V2h.391c1.109 0 2.16.49 2.873 1.34L4.89 5.277l-.979 1.167-1.796-2.14A2.25 2.25 0 0 0 .39 3.5z"/><path d="m7.5 10.723.98-1.167.957 1.14a2.25 2.25 0 0 0 1.724.804h1.947l-1.017-1.018a.75.75 0 1 1 1.06-1.06l2.829 2.828-2.829 2.828a.75.75 0 1 1-1.06-1.06L13.109 13H11.16a3.75 3.75 0 0 1-2.873-1.34l-.787-.937z"/></svg>
+                    </button>
+                    <button class="icon-btn" id="prevBtn" title="上一首">
+                        <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M3.3 1a.7.7 0 0 1 .7.7v5.15l9.95-5.744a.7.7 0 0 1 1.05.606v12.575a.7.7 0 0 1-1.05.607L4 9.149V14.3a.7.7 0 0 1-.7.7H1.7a.7.7 0 0 1-.7-.7V1.7a.7.7 0 0 1 .7-.7h1.6z"/></svg>
+                    </button>
+                    <button id="playBtn" title="播放">
+                        <svg id="playIcon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M3 1.713a.7.7 0 0 1 1.05-.607l10.89 6.288a.7.7 0 0 1 0 1.212L4.05 14.894A.7.7 0 0 1 3 14.288V1.713z"/></svg>
+                        <svg id="pauseIcon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="display:none"><path d="M2.7 1a.7.7 0 0 0-.7.7v12.6a.7.7 0 0 0 .7.7h2.6a.7.7 0 0 0 .7-.7V1.7a.7.7 0 0 0-.7-.7H2.7zm8 0a.7.7 0 0 0-.7.7v12.6a.7.7 0 0 0 .7.7h2.6a.7.7 0 0 0 .7-.7V1.7a.7.7 0 0 0-.7-.7h-2.6z"/></svg>
+                    </button>
+                    <button class="icon-btn" id="nextBtn" title="下一首">
+                        <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M12.7 1a.7.7 0 0 0-.7.7v5.15L2.05 1.107A.7.7 0 0 0 1 1.712v12.575a.7.7 0 0 0 1.05.607L12 9.149V14.3a.7.7 0 0 0 .7.7h1.6a.7.7 0 0 0 .7-.7V1.7a.7.7 0 0 0-.7-.7h-1.6z"/></svg>
+                    </button>
+                    <button class="icon-btn" id="repeatBtn" title="循环播放">
+                        <svg id="repAll" viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M0 4.75A3.75 3.75 0 0 1 3.75 1h8.5A3.75 3.75 0 0 1 16 4.75v5a3.75 3.75 0 0 1-3.75 3.75H9.81l1.018 1.018a.75.75 0 1 1-1.06 1.06L6.939 12.75l2.829-2.828a.75.75 0 1 1 1.06 1.06L9.811 12h2.439a2.25 2.25 0 0 0 2.25-2.25v-5a2.25 2.25 0 0 0-2.25-2.25h-8.5A2.25 2.25 0 0 0 1.5 4.75v5A2.25 2.25 0 0 0 3.75 12H5v1.5H3.75A3.75 3.75 0 0 1 0 9.75v-5z"/></svg>
+                        <svg id="repOne" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="display:none"><path d="M0 4.75A3.75 3.75 0 0 1 3.75 1h.75v1.5h-.75A2.25 2.25 0 0 0 1.5 4.75v5A2.25 2.25 0 0 0 3.75 12H5v1.5H3.75A3.75 3.75 0 0 1 0 9.75v-5zM12.25 2.5h-.75V1h.75A3.75 3.75 0 0 1 16 4.75v5a3.75 3.75 0 0 1-3.75 3.75H9.81l1.018 1.018a.75.75 0 1 1-1.06 1.06L6.939 12.75l2.829-2.828a.75.75 0 1 1 1.06 1.06L9.811 12h2.439a2.25 2.25 0 0 0 2.25-2.25v-5a2.25 2.25 0 0 0-2.25-2.25z"/><path d="M9.12 8V1H7.787c-.128.72-.76 1.293-1.787 1.313V3.36h1.57V8h1.55z"/></svg>
+                    </button>
+                </div>
+                <div class="timeline">
+                    <span id="curTime">0:00</span>
+                    <div class="slider" id="seekSlider">
+                        <div class="rail"><div class="fill" id="seekFill"></div></div>
+                        <div class="thumb" id="seekThumb"></div>
+                    </div>
+                    <span id="totTime">0:00</span>
+                </div>
+            </div>
+            <div id="pbRight">
+                <button class="icon-btn" id="queueBtn" title="队列">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M15 15H1v-1.5h14V15zm0-4.5H1V9h14v1.5zm-14-7A2.5 2.5 0 0 1 3.5 1h9a2.5 2.5 0 0 1 0 5h-9A2.5 2.5 0 0 1 1 3.5zm2.5-1a1 1 0 0 0 0 2h9a1 1 0 1 0 0-2h-9z"/></svg>
+                </button>
+                <button class="icon-btn" title="音量">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M9.741.85a.75.75 0 0 1 .375.65v13a.75.75 0 0 1-1.125.65l-6.925-4a3.642 3.642 0 0 1-1.33-4.967 3.639 3.639 0 0 1 1.33-1.332l6.925-4a.75.75 0 0 1 .75 0zm-6.924 5.3a2.139 2.139 0 0 0 0 3.7l5.8 3.35V2.8l-5.8 3.35zm8.683 4.29V5.56a2.75 2.75 0 0 1 0 4.88z"/><path d="M11.5 13.614a5.752 5.752 0 0 0 0-11.228v1.55a4.252 4.252 0 0 1 0 8.127v1.55z"/></svg>
+                </button>
+                <div class="slider" id="volSlider">
+                    <div class="rail"><div class="fill" id="volFill"></div></div>
+                    <div class="thumb" id="volThumb"></div>
+                </div>
+                <button class="icon-btn" id="fsBtn" title="全屏可视化">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M6.53 9.47a.75.75 0 0 1 0 1.06l-2.72 2.72h1.018a.75.75 0 0 1 0 1.5H1.25v-3.579a.75.75 0 0 1 1.5 0v1.018l2.72-2.72a.75.75 0 0 1 1.06 0zm2.94-2.94a.75.75 0 0 1 0-1.06l2.72-2.72h-1.018a.75.75 0 1 1 0-1.5h3.578v3.579a.75.75 0 0 1-1.5 0V3.81l-2.72 2.72a.75.75 0 0 1-1.06 0z"/></svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <div id="fullscreen">
+        <canvas id="fsCanvas"></canvas>
+        <div id="fsUI">
+            <img id="fsCover" alt="" />
+            <div id="fsMeta">
+                <div class="label">正在播放</div>
+                <div class="t">—</div>
+                <div class="a">—</div>
+            </div>
+        </div>
+        <div id="fsClose">✕</div>
+        <div id="fsApi"></div>
+    </div>
+
+    <div id="renderHint">正在合成音频…</div>
+
+    <script type="module">
+        import {
+            CATALOG, ALBUMS, albumTracks, artwork, Player, createSurface, fmtTime, renderTrack
+        } from '../music-core.js';
+
+        const $ = s => document.querySelector(s);
+        const player = new Player(CATALOG);
+
+        // 预热：空闲时预合成首曲；切歌时预取队列下一首（OfflineAudioContext 在独立线程渲染）
+        const idle = window.requestIdleCallback || (f => setTimeout(f, 800));
+        idle(() => renderTrack(CATALOG[0]));
+        player.addEventListener('trackchange', () => {
+            const nxt = player.queue[(player.index + 1) % player.queue.length];
+            if (nxt) idle(() => renderTrack(nxt));
+        });
+
+        /* ============ 构建界面 ============ */
+
+        const hour = new Date().getHours();
+        $('#greeting').textContent = hour < 5 ? '夜深了' : hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
+
+        // 侧栏
+        const lib = $('#libList');
+        for (const al of ALBUMS) {
+            const first = albumTracks(al.id)[0];
+            const item = document.createElement('div');
+            item.className = 'lib-item';
+            item.innerHTML = `<img src="${artwork(first, 96)}" /><div style="min-width:0">
+                <div class="t">${al.title}</div><div class="s">专辑 • ${al.artist}</div></div>`;
+            item.addEventListener('click', () => playAlbum(al.id));
+            lib.appendChild(item);
+        }
+        for (const t of CATALOG) {
+            const item = document.createElement('div');
+            item.className = 'lib-item';
+            item.dataset.track = t.id;
+            item.innerHTML = `<img src="${artwork(t, 96)}" /><div style="min-width:0">
+                <div class="t">${t.title}</div><div class="s">单曲 • ${t.artist}</div></div>`;
+            item.addEventListener('click', () => playFromAll(t));
+            lib.appendChild(item);
+        }
+
+        // 快捷格（前 6 首）
+        const shortcuts = $('#shortcuts');
+        for (const t of CATALOG.slice(0, 6)) {
+            const el = document.createElement('div');
+            el.className = 'shortcut';
+            el.innerHTML = `<img src="${artwork(t, 128)}" /><span class="t">${t.title}</span>
+                <span class="play-fab" style="width:44px;height:44px;right:10px;bottom:6px">
+                <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor"><path d="M3 1.713a.7.7 0 0 1 1.05-.607l10.89 6.288a.7.7 0 0 1 0 1.212L4.05 14.894A.7.7 0 0 1 3 14.288V1.713z"/></svg></span>`;
+            el.querySelector('.play-fab').style.top = '6px';
+            el.addEventListener('click', () => playFromAll(t));
+            el.addEventListener('mouseenter', () => setHero(t));
+            shortcuts.appendChild(el);
+        }
+
+        // 专辑卡片
+        const cards = $('#albumCards');
+        for (const al of ALBUMS) {
+            const tracks = albumTracks(al.id);
+            const el = document.createElement('div');
+            el.className = 'card';
+            el.innerHTML = `
+                <div class="cover-wrap">
+                    <img class="cover" src="${artwork(tracks[0], 384)}" />
+                    <span class="play-fab"><svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor"><path d="M3 1.713a.7.7 0 0 1 1.05-.607l10.89 6.288a.7.7 0 0 1 0 1.212L4.05 14.894A.7.7 0 0 1 3 14.288V1.713z"/></svg></span>
+                </div>
+                <div class="t">${al.title}</div>
+                <div class="s">${al.year} • ${al.artist}</div>`;
+            el.addEventListener('click', () => playAlbum(al.id));
+            cards.appendChild(el);
+        }
+        // 每日推荐卡（混合队列）
+        {
+            const el = document.createElement('div');
+            el.className = 'card';
+            const t = CATALOG[6];
+            el.innerHTML = `
+                <div class="cover-wrap">
+                    <img class="cover" src="${artwork(t, 384)}" style="filter:hue-rotate(40deg) saturate(1.3)" />
+                    <span class="play-fab"><svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor"><path d="M3 1.713a.7.7 0 0 1 1.05-.607l10.89 6.288a.7.7 0 0 1 0 1.212L4.05 14.894A.7.7 0 0 1 3 14.288V1.713z"/></svg></span>
+                </div>
+                <div class="t">每日推荐</div>
+                <div class="s">由 GPU 实时合成的 8 首曲目</div>`;
+            el.addEventListener('click', () => {
+                player.queue = CATALOG.slice();
+                player.shuffle = true;
+                syncToggles();
+                player.playIndex(Math.floor(Math.random() * CATALOG.length));
+            });
+            cards.appendChild(el);
+        }
+
+        // 歌曲表
+        const table = $('#trackTable');
+        table.innerHTML = `<div class="tr head"><span class="idx">#</span><span>标题</span><span>专辑</span><span class="dur">
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="vertical-align:-3px"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"/><path d="M8 3.25a.75.75 0 0 1 .75.75v3.25H11a.75.75 0 0 1 0 1.5H7.25V4A.75.75 0 0 1 8 3.25z"/></svg></span></div>`;
+        CATALOG.forEach((t, i) => {
+            const row = document.createElement('div');
+            row.className = 'tr';
+            row.dataset.track = t.id;
+            const albumTitle = ALBUMS.find(a => a.id === t.album).title;
+            row.innerHTML = `
+                <span class="idx"><span class="num">${i + 1}</span>
+                    <svg class="playbtn" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3 1.713a.7.7 0 0 1 1.05-.607l10.89 6.288a.7.7 0 0 1 0 1.212L4.05 14.894A.7.7 0 0 1 3 14.288V1.713z"/></svg></span>
+                <span class="main-cell"><img src="${artwork(t, 96)}" loading="lazy" />
+                    <span style="min-width:0"><span class="tt" style="display:block">${t.title}</span><span class="ta">${t.artist}</span></span></span>
+                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${albumTitle}</span>
+                <span class="dur">${fmtTime(t.duration)}</span>`;
+            row.addEventListener('click', () => playFromAll(t));
+            table.appendChild(row);
+        });
+
+        function playAlbum(id) {
+            player.queue = albumTracks(id);
+            player.playIndex(0);
+        }
+        function playFromAll(t) {
+            player.queue = CATALOG.slice();
+            player.playTrack(t);
+        }
+        function setHero(t) {
+            document.documentElement.style.setProperty('--hero', t.palette[1]);
+        }
+
+        /* ============ 播放条状态 ============ */
+
+        const pbCover = $('#pbCover'), pbTitle = $('#pbTitle'), pbArtist = $('#pbArtist');
+        const playIcon = $('#playIcon'), pauseIcon = $('#pauseIcon');
+        const liked = new Set();
+
+        player.addEventListener('trackchange', () => {
+            const t = player.track;
+            pbCover.src = artwork(t, 128);
+            pbTitle.textContent = t.title;
+            pbArtist.textContent = t.artist;
+            $('#totTime').textContent = fmtTime(t.duration);
+            $('#fsCover').src = artwork(t, 384);
+            $('#fsMeta .t').textContent = t.title;
+            $('#fsMeta .a').textContent = t.artist;
+            setHero(t);
+            markPlayingRow();
+            $('#likeBtn').classList.toggle('lit', liked.has(t.id));
+        });
+        player.addEventListener('loading', () => $('#renderHint').classList.add('show'));
+        player.addEventListener('ready', () => $('#renderHint').classList.remove('show'));
+        player.addEventListener('play', syncPlayState);
+        player.addEventListener('pause', syncPlayState);
+
+        function syncPlayState() {
+            playIcon.style.display = player.playing ? 'none' : '';
+            pauseIcon.style.display = player.playing ? '' : 'none';
+            markPlayingRow();
+        }
+
+        function markPlayingRow() {
+            const id = player.track?.id;
+            for (const row of document.querySelectorAll('.tr[data-track]')) {
+                const isCur = row.dataset.track === id;
+                row.classList.toggle('playing', isCur);
+                const idx = row.querySelector('.idx');
+                let eq = idx.querySelector('.eq');
+                if (isCur) {
+                    if (!eq) {
+                        eq = document.createElement('span');
+                        eq.className = 'eq';
+                        eq.innerHTML = '<i></i><i></i><i></i><i></i>';
+                        idx.appendChild(eq);
+                    }
+                    idx.querySelector('.num').style.display = 'none';
+                    eq.classList.toggle('paused', !player.playing);
+                } else {
+                    idx.querySelector('.num').style.display = '';
+                    eq?.remove();
+                }
+            }
+            for (const item of document.querySelectorAll('.lib-item[data-track] .t')) {
+                item.classList.toggle('playing', item.closest('.lib-item').dataset.track === id);
+            }
+        }
+
+        $('#playBtn').addEventListener('click', () => player.toggle());
+        $('#nextBtn').addEventListener('click', () => player.next());
+        $('#prevBtn').addEventListener('click', () => player.prev());
+        $('#likeBtn').addEventListener('click', () => {
+            const t = player.track; if (!t) return;
+            liked.has(t.id) ? liked.delete(t.id) : liked.add(t.id);
+            $('#likeBtn').classList.toggle('lit', liked.has(t.id));
+        });
+        $('#shuffleBtn').addEventListener('click', () => { player.shuffle = !player.shuffle; syncToggles(); });
+        $('#repeatBtn').addEventListener('click', () => {
+            player.repeat = player.repeat === 'off' ? 'all' : player.repeat === 'all' ? 'one' : 'off';
+            syncToggles();
+        });
+        function syncToggles() {
+            $('#shuffleBtn').classList.toggle('lit', player.shuffle);
+            $('#repeatBtn').classList.toggle('lit', player.repeat !== 'off');
+            $('#repAll').style.display = player.repeat === 'one' ? 'none' : '';
+            $('#repOne').style.display = player.repeat === 'one' ? '' : 'none';
+        }
+
+        /* ============ 滑杆（进度 / 音量）：scaleX + translateX ============ */
+
+        function makeSlider(rootSel, fillSel, thumbSel, getRatio, onInput) {
+            const root = $(rootSel), fill = $(fillSel), thumb = $(thumbSel);
+            let dragging = false;
+            function render(r) {
+                r = Math.max(0, Math.min(1, r));
+                fill.style.transform = `scaleX(${r.toFixed(4)})`;
+                thumb.style.transform = `translate3d(${(r * root.clientWidth).toFixed(1)}px, 0, 0)`;
+            }
+            function ratioFromEvent(e) {
+                const rect = root.getBoundingClientRect();
+                return (e.clientX - rect.left) / rect.width;
+            }
+            root.addEventListener('pointerdown', e => {
+                dragging = true;
+                root.classList.add('drag');
+                root.setPointerCapture(e.pointerId);
+                onInput(ratioFromEvent(e), false);
+                render(ratioFromEvent(e));
+            });
+            root.addEventListener('pointermove', e => {
+                if (!dragging) return;
+                onInput(ratioFromEvent(e), false);
+                render(ratioFromEvent(e));
+            });
+            root.addEventListener('pointerup', e => {
+                dragging = false;
+                root.classList.remove('drag');
+                onInput(ratioFromEvent(e), true);
+            });
+            return {
+                update() { if (!dragging) render(getRatio()); },
+                get dragging() { return dragging; },
+            };
+        }
+
+        let pendingSeek = null;
+        const seek = makeSlider('#seekSlider', '#seekFill', '#seekThumb',
+            () => player.duration ? player.time / player.duration : 0,
+            (r, commit) => {
+                pendingSeek = r;
+                $('#curTime').textContent = fmtTime(r * player.duration);
+                if (commit && player.buffer) { player.seek(r * player.duration); pendingSeek = null; }
+            });
+        const vol = makeSlider('#volSlider', '#volFill', '#volThumb',
+            () => player.volume,
+            r => { player.volume = Math.max(0, Math.min(1, r)); });
+
+        /* ============ 全屏可视化：WebGPU(WGSL) 优先，WebGL2 回退 ============ */
+
+        const WGSL = /* wgsl */`
+        fn bandAt(x: f32) -> f32 {
+            return freqAt(x * 0.72 + 0.005);
+        }
+        fn ambientCol(p: vec2f) -> vec3f {
+            var col = u.c2.rgb * 0.22;
+            let g1 = vec2f(0.3 + 0.18 * sin(u.time * 0.11), 0.62 + 0.14 * cos(u.time * 0.13));
+            let g2 = vec2f(0.72 + 0.16 * cos(u.time * 0.09), 0.38 + 0.17 * sin(u.time * 0.15));
+            col += u.c0.rgb * 0.30 * exp(-3.2 * distance(p, g1)) * (0.8 + u.level);
+            col += u.c1.rgb * 0.30 * exp(-3.0 * distance(p, g2)) * (0.8 + u.level);
+            return col;
+        }
+        fn shade(uv: vec2f) -> vec3f {
+            let p = uv;
+            var col = ambientCol(p);
+
+            // 64 根镜像频谱条
+            let bands = 64.0;
+            let bx = floor(p.x * bands) / bands + 0.5 / bands;
+            var v = bandAt(bx);
+            v = pow(v, 1.35);
+            let h = 0.04 + v * 0.42;
+            let d = abs(p.y - 0.5);
+            let inBar = step(d, h);
+            let cell = fract(p.x * bands);
+            let gap = smoothstep(0.0, 0.12, cell) * smoothstep(1.0, 0.88, cell);
+            var barCol = mix(u.c0.rgb, u.c1.rgb, p.x) * (0.65 + v * 0.9);
+            barCol = mix(barCol, vec3f(1.0), smoothstep(h * 0.72, h, d) * 0.35 * inBar);
+            col += barCol * inBar * gap;
+            col += barCol * gap * exp(-14.0 * max(0.0, d - h)) * 0.18;
+
+            let vig = smoothstep(1.25, 0.45, distance(p, vec2f(0.5)) * 1.2);
+            col *= vig;
+            col += (grain(p * u.res) - 0.5) * 0.025;
+            return col;
+        }`;
+
+        const FRAG = `#version 300 es
+        precision highp float;
+        in vec2 uv;
+        out vec4 frag;
+        uniform sampler2D uFreq;
+        uniform float uTime;
+        uniform vec2 uRes;
+        uniform vec3 uC0, uC1, uC2;
+        uniform float uLevel;
+
+        float bandAt(float x) {
+            return texture(uFreq, vec2(x * 0.72 + 0.005, 0.5)).r;
+        }
+        // 背景氛围：缓慢漂移的调色板光斑
+        vec3 ambient(vec2 p) {
+            vec3 col = uC2 * 0.22;
+            vec2 c1 = vec2(0.3 + 0.18 * sin(uTime * 0.11), 0.62 + 0.14 * cos(uTime * 0.13));
+            vec2 c2 = vec2(0.72 + 0.16 * cos(uTime * 0.09), 0.38 + 0.17 * sin(uTime * 0.15));
+            col += uC0 * 0.30 * exp(-3.2 * distance(p, c1)) * (0.8 + uLevel);
+            col += uC1 * 0.30 * exp(-3.0 * distance(p, c2)) * (0.8 + uLevel);
+            return col;
+        }
+        void main() {
+            vec2 p = uv;
+            float aspect = uRes.x / uRes.y;
+            vec3 col = ambient(p);
+
+            // 64 根镜像频谱条
+            float bands = 64.0;
+            float bx = floor(p.x * bands) / bands + 0.5 / bands;
+            float v = bandAt(bx);
+            v = pow(v, 1.35);
+            float h = 0.04 + v * 0.42;
+            float d = abs(p.y - 0.5);
+            float inBar = step(d, h);
+            // 条间隙
+            float cell = fract(p.x * bands);
+            float gap = smoothstep(0.0, 0.12, cell) * smoothstep(1.0, 0.88, cell);
+            vec3 barCol = mix(uC0, uC1, p.x) * (0.65 + v * 0.9);
+            barCol = mix(barCol, vec3(1.0), smoothstep(h * 0.72, h, d) * 0.35 * inBar);
+            col += barCol * inBar * gap;
+            // 倒影感淡光
+            col += barCol * gap * exp(-14.0 * max(0.0, d - h)) * 0.18;
+
+            // 暗角
+            float vig = smoothstep(1.25, 0.45, distance(p, vec2(0.5)) * 1.2);
+            col *= vig;
+            // 颗粒
+            float g = fract(sin(dot(p * uRes, vec2(12.9898, 78.233))) * 43758.5453);
+            col += (g - 0.5) * 0.025;
+            frag = vec4(col, 1.0);
+        }`;
+
+        const fsEl = $('#fullscreen');
+        let surface = null, surfacePromise = null, fsActive = false;
+        const freqData = new Uint8Array(1024);
+
+        function ensureSurface() {
+            if (!surfacePromise) {
+                surfacePromise = createSurface($('#fsCanvas'), { wgsl: WGSL, glsl: FRAG }).then(s => {
+                    surface = s;
+                    if (s) {
+                        $('#fsApi').textContent = '渲染 · ' + (s.api === 'webgpu' ? 'WebGPU' : 'WebGL2');
+                        console.log('[Spotify] 可视化渲染后端:', s.api);
+                    }
+                    return s;
+                });
+            }
+            return surfacePromise;
+        }
+
+        let smoothLevel = 0;
+        function fsLoop(now) {
+            if (!fsActive || !surface) return;
+            surface.resize(2);
+            if (player.analyser) {
+                player.analyser.getByteFrequencyData(freqData);
+            } else {
+                freqData.fill(0);
+            }
+            // 低频能量 → 封面脉冲
+            let bass = 0;
+            for (let i = 2; i < 24; i++) bass += freqData[i];
+            bass /= 24 * 255;
+            smoothLevel += (bass - smoothLevel) * 0.18;
+            $('#fsCover').style.transform = `scale(${(1 + smoothLevel * 0.055).toFixed(4)})`;
+
+            const pal = (player.track || CATALOG[0]).palette;
+            surface.frame({
+                time: now / 1000,
+                level: smoothLevel,
+                palette: [pal[0], pal[3], pal[2], pal[1]],
+                freq: freqData.subarray(0, 512),
+            });
+            requestAnimationFrame(fsLoop);
+        }
+
+        $('#fsBtn').addEventListener('click', async () => {
+            if (!await ensureSurface()) return;
+            fsActive = true;
+            fsEl.classList.add('show');
+            requestAnimationFrame(() => fsEl.classList.add('visible'));
+            requestAnimationFrame(fsLoop);
+        });
+        $('#fsClose').addEventListener('click', () => {
+            fsActive = false;
+            fsEl.classList.remove('visible');
+            setTimeout(() => fsEl.classList.remove('show'), 420);
+        });
+        addEventListener('keydown', e => {
+            if (e.key === 'Escape' && fsActive) $('#fsClose').click();
+            if (e.code === 'Space' && e.target === document.body) { e.preventDefault(); player.toggle(); }
+        });
+
+        /* ============ 主循环：仅在需要时写 DOM ============ */
+
+        (function uiLoop() {
+            if (player.buffer && pendingSeek === null) {
+                $('#curTime').textContent = fmtTime(player.time);
+            }
+            seek.update();
+            requestAnimationFrame(uiLoop);
+        })();
+        vol.update();
+        addEventListener('resize', () => { seek.update(); vol.update(); });
+
+        // 初始状态
+        pbCover.src = artwork(CATALOG[0], 128);
+        setHero(CATALOG[0]);
+        syncToggles();
+    </script>
+</body>
+
+</html>

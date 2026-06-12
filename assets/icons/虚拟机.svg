@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50px" height="50px" viewBox="0 0 50 50" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>虚拟机</title>
+    <defs>
+        <linearGradient id="vmIconBg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#42485a"/>
+            <stop offset="1" stop-color="#1b1e29"/>
+        </linearGradient>
+        <linearGradient id="vmIconCase" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#efe9da"/>
+            <stop offset="1" stop-color="#c8c0ac"/>
+        </linearGradient>
+        <radialGradient id="vmIconScreen" cx="0.5" cy="0.42" r="0.85">
+            <stop offset="0" stop-color="#0d3a1c"/>
+            <stop offset="0.7" stop-color="#072312"/>
+            <stop offset="1" stop-color="#04140a"/>
+        </radialGradient>
+        <linearGradient id="vmIconFloppy" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3b82f7"/>
+            <stop offset="1" stop-color="#1f5fd6"/>
+        </linearGradient>
+    </defs>
+    <g fill="none" fill-rule="evenodd">
+        <!-- 圆角底板 -->
+        <rect x="1" y="1" width="48" height="48" rx="11" fill="url(#vmIconBg)"/>
+        <rect x="1.5" y="1.5" width="47" height="47" rx="10.5" stroke="#ffffff" stroke-opacity="0.08"/>
+        <!-- CRT 机壳 -->
+        <rect x="7" y="7" width="36" height="27" rx="4" fill="url(#vmIconCase)"/>
+        <rect x="7.4" y="7.4" width="35.2" height="26.2" rx="3.6" stroke="#8d8570" stroke-width="0.8"/>
+        <!-- 屏幕（绿色荧光） -->
+        <rect x="10.5" y="10.5" width="29" height="20" rx="2.5" fill="url(#vmIconScreen)" stroke="#26221a" stroke-width="0.8"/>
+        <!-- DOS 提示符 -->
+        <text x="13" y="18.4" font-family="Menlo, Monaco, monospace" font-size="5.2" fill="#3dff79">C:\&gt;</text>
+        <rect x="26" y="14.2" width="2.6" height="4.6" fill="#3dff79" opacity="0.9"/>
+        <text x="13" y="25" font-family="Menlo, Monaco, monospace" font-size="3.6" fill="#2ecf63" opacity="0.65">dir /w</text>
+        <!-- 屏幕高光 -->
+        <path d="M12 11.5 L20 11.5 L13.5 27 L12 27 Z" fill="#ffffff" opacity="0.07"/>
+        <!-- 机壳通风线与电源灯 -->
+        <rect x="11" y="31.6" width="10" height="1" rx="0.5" fill="#a39a83"/>
+        <circle cx="39" cy="32.1" r="1" fill="#30d158"/>
+        <!-- 底座 -->
+        <rect x="19" y="34" width="12" height="2.6" fill="#b3ab95"/>
+        <rect x="14" y="36.6" width="22" height="3.4" rx="1.7" fill="url(#vmIconCase)"/>
+        <rect x="14.4" y="37" width="21.2" height="2.6" rx="1.3" stroke="#8d8570" stroke-width="0.8"/>
+        <!-- 软盘 -->
+        <g transform="translate(31 31) rotate(-8 6.5 6.5)">
+            <rect x="0" y="0" width="13" height="13" rx="1.4" fill="url(#vmIconFloppy)" stroke="#10398c" stroke-width="0.7"/>
+            <rect x="3.4" y="0.8" width="6.2" height="4.4" rx="0.5" fill="#c9d4e8"/>
+            <rect x="6.6" y="1.6" width="1.8" height="2.8" rx="0.3" fill="#23439a"/>
+            <rect x="2" y="6.8" width="9" height="5.4" rx="0.6" fill="#f2f0ea"/>
+            <rect x="3" y="8" width="7" height="0.8" rx="0.4" fill="#9aa3b5"/>
+            <rect x="3" y="9.6" width="5" height="0.8" rx="0.4" fill="#9aa3b5"/>
+        </g>
+    </g>
+</svg>

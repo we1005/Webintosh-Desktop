@@ -3,7 +3,7 @@ import { create, bringToFront } from "./window.js";
 const tip = document.querySelector("body > div.tip");
 const defaultApps = [
     "访达", "启动台", "Safari浏览器", "信息", "邮件", "地图", "照片", "FaceTime通话",
-    "日历", "通讯录", "提醒事项", "备忘录", "音乐", "视频", "播客", "News", "系统设置",
+    "日历", "提醒事项", "备忘录", "音乐", "Spotify", "终端", "虚拟机", "泡泡堂", "系统设置",
     "hr", "下载_Folder", "废纸篓"
 ];
 let noAnimation = ["启动台", "访达"];
@@ -25,7 +25,12 @@ function bindClickEvent(img, light, app) {
     img.addEventListener("mouseup", () => {
         if (appStatus[img.alt] == true) {
             if (!doClose.includes(img.alt)) {
-                bringToFront(document.getElementById(img.alt), img.alt);
+                const win = document.getElementById(img.alt);
+                if (win && win.isMinimized && win._restoreWindow) {
+                    win._restoreWindow();   // 最小化的窗口：点 Dock 恢复
+                } else if (win) {
+                    bringToFront(win, img.alt);
+                }
             } else {
                 window.specialCloses[img.alt]();
                 light.classList.remove("on");
@@ -240,53 +245,67 @@ function tipSetup() {
     });
 }
 
+/* ------------------------------------------------------------
+ * Dock 放大 —— GPU 合成器路径：
+ * 旧实现逐帧改 width/height（每帧整条 Dock 重排）。
+ * 新实现：图标只做 transform: scale，容器做 translate3d 推挤，
+ * 玻璃背景用 --dock-stretch 驱动 ::before 的 scaleX 跟随展宽，
+ * 全程零布局计算；缩放值带 lerp 平滑，保留原手感。
+ * ------------------------------------------------------------ */
 function DockAnimation() {
-    // dock_zoom = true; // Remove unused variable
     const baseWidth = 50;
     const mouseRange = 200;
     const maxScale = 1.8;
     const lerpSpeed = 0.3;
-    let images = [];
-    dockcontainer.addEventListener("mousemove", (e) => {
-        images = dock.querySelectorAll(".container img");
-        const mouseX = e.clientX;
-        images.forEach((img) => {
-            if (typeof img.currentWidth === 'undefined') img.currentWidth = baseWidth;
-            if (typeof img.targetWidth === 'undefined') img.targetWidth = baseWidth;
-            const rect = img.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const distance = Math.abs(mouseX - centerX);
-            if (dockZoom && distance < mouseRange) {
-                const distanceRatio = distance / mouseRange;
-                const scale = 1 + (maxScale - 1) * Math.sin((1 - distanceRatio) * Math.PI / 2);
-                img.targetWidth = baseWidth * scale;
-            } else {
-                img.targetWidth = baseWidth;
-            }
-        });
-    });
-    dock.addEventListener("mouseleave", () => {
-        images = dock.querySelectorAll(".container img");
-        images.forEach((img) => {
-            img.targetWidth = baseWidth;
-        });
-    });
+    let mouseX = null;
+
+    dockcontainer.addEventListener("mousemove", (e) => { mouseX = e.clientX; });
+    dock.addEventListener("mouseleave", () => { mouseX = null; });
+    dockcontainer.addEventListener("mouseleave", () => { mouseX = null; });
+
     function animation() {
-        if (images.length === 0) images = dock.querySelectorAll(".container img");
-        images.forEach(img => {
-            if (typeof img.currentWidth === 'undefined') img.currentWidth = baseWidth;
-            if (typeof img.targetWidth === 'undefined') img.targetWidth = baseWidth;
+        const containers = dock.querySelectorAll(".container");
+        let needLayout = false;
 
-            // Ensure we return to baseWidth if zoom is turned off
-            if (!dockZoom) img.targetWidth = baseWidth;
-
-            const diff = img.targetWidth - img.currentWidth;
-            if (Math.abs(diff) > 0.1) {
-                img.currentWidth += diff * lerpSpeed;
-                img.style.width = `${img.currentWidth}px`;
-                img.style.height = `${img.currentWidth}px`;
+        containers.forEach((c) => {
+            if (typeof c._scale === "undefined") { c._scale = 1; c._offset = 0; }
+            const img = c.querySelector("img");
+            let target = 1;
+            if (img && dockZoom && mouseX !== null) {
+                const rect = c.getBoundingClientRect();
+                // 减去当前位移得到静态槽位中心，避免推挤反馈震荡
+                const centerX = rect.left + rect.width / 2 - c._offset;
+                const distance = Math.abs(mouseX - centerX);
+                if (distance < mouseRange) {
+                    target = 1 + (maxScale - 1) * Math.sin((1 - distance / mouseRange) * Math.PI / 2);
+                }
+            }
+            const diff = target - c._scale;
+            if (Math.abs(diff) > 0.002) {
+                c._scale += diff * lerpSpeed;
+                needLayout = true;
+            } else if (c._scale !== target) {
+                c._scale = target;
+                needLayout = true;
             }
         });
+
+        if (needLayout) {
+            // 推挤偏移：放大图标把邻居推开，整体保持居中
+            const extras = [...containers].map(c => (c._scale - 1) * baseWidth);
+            const totalExtra = extras.reduce((a, b) => a + b, 0);
+            let acc = 0;
+            containers.forEach((c, i) => {
+                const off = acc + extras[i] / 2 - totalExtra / 2;
+                acc += extras[i];
+                c._offset = off;
+                c.style.transform = `translate3d(${off.toFixed(2)}px, 0, 0)`;
+                const img = c.querySelector("img");
+                if (img) img.style.transform = `scale(${c._scale.toFixed(4)})`;
+            });
+            dock.style.setProperty("--dock-stretch",
+                (1 + totalExtra / Math.max(1, dock.offsetWidth)).toFixed(4));
+        }
         requestAnimationFrame(animation);
     }
     animation();

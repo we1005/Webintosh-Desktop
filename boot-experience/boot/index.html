@@ -1,0 +1,38 @@
+<!--
+Booting page in Webintosh
+
+Urls can be like following:
+/boot?boot=recovery
+/boot?boot=problem
+/boot?theme=gray
+/boot?theme=black
+/boot
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>macOS Sequoia</title>
+    <link rel="stylesheet" href="../assets/styles/boot.css" />
+    <link rel="stylesheet" href="../assets/styles/font.css" />
+    <!-- <link rel="stylesheet" href="../assets/styles/cursor.css" /> -->
+</head>
+
+<body>
+    <p logo></p>
+    <img logo src="../assets/images/icon.unsupported.svg" />
+    <div frame>
+        <div processframe>
+            <div process></div>
+        </div>
+        <p state>support.apple.com/mac/startup</p>
+    </div>
+
+    <script type="module" src="../src/js/boot.js"></script>
+    <script type="module" src="../src/js/element.js"></script>
+</body>
+
+</html>

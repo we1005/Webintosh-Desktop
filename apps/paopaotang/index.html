@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>泡泡堂大作战 🫧</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#4a3933;
+  --sky1:#aee4ff; --sky2:#fdf3df;
+  --coral:#ff7b9c; --sun:#ffd34d; --aqua:#58c8ff; --mint:#7adb9a;
+  --card:#fffdf6;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'ZCOOL KuaiLe','Baloo 2',-apple-system,sans-serif;
+  color:var(--ink);
+  background:linear-gradient(180deg,var(--sky1) 0%,#cdeefc 45%,var(--sky2) 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:14px;overflow-x:hidden;overflow-y:auto;user-select:none;
+}
+/* drifting clouds on the page background */
+body::before,body::after{
+  content:"";position:fixed;z-index:0;border-radius:999px;background:#fff;opacity:.75;
+  box-shadow:60px 14px 0 -8px #fff, -55px 18px 0 -14px #fff, 10px -16px 0 -6px #fff;
+}
+body::before{width:130px;height:44px;top:8%;left:-140px;animation:drift 38s linear infinite}
+body::after{width:170px;height:54px;top:22%;left:-190px;animation:drift 55s linear 8s infinite}
+@keyframes drift{to{transform:translateX(calc(100vw + 380px))}}
+
+#hud{
+  position:relative;z-index:2;display:none;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;
+  width:min(96vw,760px);
+}
+#hud.on{display:flex}
+.badge{
+  background:var(--card);border:3px solid var(--ink);border-radius:999px;
+  padding:3px 13px;font-size:17px;line-height:1.45;
+  box-shadow:0 3px 0 var(--ink);display:inline-flex;align-items:center;gap:5px;
+}
+.badge b{font-family:'Baloo 2',sans-serif;font-size:18px;color:#e2596f}
+#hearts{letter-spacing:2px}
+#btnMute{cursor:pointer;font-family:inherit}
+#btnMute:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+
+#stage{
+  position:relative;z-index:1;
+  border:5px solid var(--ink);border-radius:22px;overflow:hidden;
+  box-shadow:0 10px 0 rgba(74,57,51,.28), 0 24px 50px rgba(90,120,160,.35);
+  background:#bfe49a;
+  /* 关键：按视口高度限制宽度（690/598≈1.154），保证整张地图始终可见 */
+  width:min(96vw, 700px, calc((100vh - 185px) * 1.154));
+  width:min(96vw, 700px, calc((100dvh - 185px) * 1.154));
+}
+canvas#game{display:block;width:100%;height:auto}
+
+/* ---------- overlays ---------- */
+.overlay{
+  position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:16px;text-align:center;padding:20px;
+  background:linear-gradient(180deg,#9edcff 0%,#cfeeff 55%,#fff3d6 100%);
+}
+.overlay.hide{display:none}
+/* 标题菜单：全屏铺开，不要游戏舞台那个大框 */
+#title{
+  position:fixed;inset:0;z-index:40;background:none;
+  overflow:hidden auto;gap:14px;
+}
+body.title #stage,body.title .foot{visibility:hidden}
+@media (max-height:680px){ #title{justify-content:flex-start} } /* 矮屏防裁切 */
+.overlay .pane{ /* translucent pane variant for in-game messages */
+  position:absolute;inset:0;background:rgba(50,70,90,.45);backdrop-filter:blur(3px)
+}
+#title h1{
+  font-size:clamp(44px,9vw,76px);line-height:1.05;color:#fff;letter-spacing:4px;
+  text-shadow:0 4px 0 var(--ink), 0 9px 0 rgba(74,57,51,.25);
+  -webkit-text-stroke:2px var(--ink);
+  animation:boing 2.6s ease-in-out infinite;
+}
+#title h1 span{display:block;font-size:.42em;color:var(--sun);letter-spacing:10px;margin-top:4px}
+@keyframes boing{0%,100%{transform:scale(1) rotate(-1.5deg)}50%{transform:scale(1.05) rotate(1.5deg)}}
+#pv{filter:drop-shadow(0 5px 0 rgba(74,57,51,.18))}
+.btn{
+  font-family:inherit;font-size:24px;color:#fff;cursor:pointer;
+  background:linear-gradient(180deg,var(--coral),#f95f86);
+  border:4px solid var(--ink);border-radius:999px;padding:10px 42px;
+  box-shadow:0 6px 0 var(--ink);letter-spacing:3px;
+  transition:transform .08s, box-shadow .08s;
+}
+.btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 8px 0 var(--ink)}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.btnRow{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.btn2{background:linear-gradient(180deg,#9adcff,#58a8e8);font-size:20px;padding:10px 26px}
+/* 选关卡片 */
+#levelSel{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.lv{
+  position:relative;font-family:inherit;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  background:var(--card);border:3px solid var(--ink);border-radius:16px;
+  padding:8px 14px 7px;font-size:16px;color:var(--ink);
+  box-shadow:0 4px 0 var(--ink);transition:transform .12s, box-shadow .12s;
+  opacity:.82;
+}
+.lv i{font-style:normal;font-size:22px;line-height:1.1}
+.lv span{font-size:12px;color:#8a6f63;letter-spacing:1px}
+.lv em{position:absolute;top:-10px;right:-8px;font-style:normal;font-size:15px;
+  filter:drop-shadow(0 2px 0 rgba(74,57,51,.3))}
+.lv:hover{transform:translateY(-2px)}
+.lv.sel{
+  opacity:1;transform:translateY(-4px) scale(1.07);
+  border-color:var(--ink);background:#fff3c8;
+  box-shadow:0 6px 0 var(--ink), 0 0 0 3px var(--sun);
+}
+.howto{
+  background:var(--card);border:3px solid var(--ink);border-radius:16px;
+  box-shadow:0 4px 0 var(--ink);padding:10px 18px;font-size:15px;max-width:520px;line-height:1.9;
+}
+.howto kbd{
+  font-family:'Baloo 2',sans-serif;background:var(--sun);border:2px solid var(--ink);
+  border-radius:7px;padding:0 7px;box-shadow:0 2px 0 var(--ink);font-size:13px;
+}
+/* rising bubbles on title */
+.bub{position:absolute;bottom:-60px;border:3px solid rgba(255,255,255,.9);border-radius:50%;
+  background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.9),rgba(160,220,255,.25));
+  animation:rise linear infinite;pointer-events:none}
+@keyframes rise{to{transform:translateY(-130vh) rotate(40deg)}}
+
+#msg{background:none}
+#msg .card{
+  position:relative;background:var(--card);border:5px solid var(--ink);border-radius:26px;
+  box-shadow:0 9px 0 var(--ink);padding:30px 50px;display:flex;flex-direction:column;gap:14px;align-items:center;
+  animation:popin .35s cubic-bezier(.2,1.6,.4,1) both;
+}
+@keyframes popin{from{transform:scale(.5);opacity:0}}
+#msgTitle{font-size:42px;letter-spacing:3px}
+#msgSub{font-size:18px;color:#8a6f63;line-height:1.7}
+
+/* ---------- 移动端虚拟控件：左半屏浮动摇杆 + 右下泡泡键 ---------- */
+#stickZone{
+  position:fixed;left:0;bottom:0;width:58vw;height:50vh;z-index:30;
+  touch-action:none;pointer-events:none;-webkit-touch-callout:none;
+}
+body.touch.playing #stickZone{pointer-events:auto}
+#stickHint{
+  display:none;position:fixed;z-index:29;pointer-events:none;
+  left:max(26px,env(safe-area-inset-left));bottom:max(34px,env(safe-area-inset-bottom));
+  width:96px;height:96px;border-radius:50%;
+  border:3px dashed rgba(74,57,51,.4);color:rgba(74,57,51,.45);
+  font-size:34px;line-height:92px;text-align:center;
+}
+#stickBase{
+  display:none;position:fixed;z-index:31;pointer-events:none;
+  width:118px;height:118px;margin:-59px 0 0 -59px;border-radius:50%;
+  background:rgba(255,255,255,.3);border:3px solid rgba(255,255,255,.8);
+}
+#stickKnob{
+  position:absolute;left:50%;top:50%;width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(180deg,#9adcff,#58c8ff);
+  border:3px solid var(--ink);box-shadow:0 3px 0 var(--ink);
+  transform:translate(-50%,-50%);
+}
+#btnBubble{
+  display:none;position:fixed;z-index:30;
+  right:max(18px,env(safe-area-inset-right));bottom:max(28px,env(safe-area-inset-bottom));
+  width:104px;height:104px;border-radius:50%;font-size:46px;
+  background:radial-gradient(circle at 35% 30%,#c9ecff,#58c8ff 72%);
+  border:4px solid var(--ink);box-shadow:0 6px 0 var(--ink),0 12px 26px rgba(60,90,140,.35);
+  touch-action:none;-webkit-touch-callout:none;
+}
+body.touch.playing #btnBubble{display:block}
+#btnBubble:active{transform:scale(.9) translateY(3px);box-shadow:0 2px 0 var(--ink)}
+.foot{z-index:2;font-size:13px;color:#7d8aa0;opacity:.85}
+
+/* 手机竖屏：地图靠上，下方留出摇杆区 */
+@media (pointer:coarse) and (orientation:portrait){
+  body{justify-content:flex-start}
+  #stage{width:min(96vw, calc((100dvh - 330px) * 1.154))}
+  .foot{display:none}
+}
+/* 手机横屏：控件悬浮在地图两侧 */
+@media (pointer:coarse) and (orientation:landscape){
+  #stage{width:min(96vw, calc((100dvh - 130px) * 1.154))}
+  .foot{display:none}
+}
+/* 小屏 HUD 紧凑化 */
+@media (max-width:560px){
+  #hud{gap:4px}
+  .badge{font-size:13px;padding:2px 8px;border-width:2.5px;box-shadow:0 2px 0 var(--ink)}
+  .badge b{font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<div id="hud">
+  <span class="badge" id="hearts">❤️❤️❤️</span>
+  <span class="badge" title="水泡威力">💧<b id="stPow">2</b></span>
+  <span class="badge" title="同时泡泡数">🫧<b id="stBub">1</b></span>
+  <span class="badge" title="速度">⚡<b id="stSpd">1</b></span>
+  <span class="badge" title="针：被困时自动脱困">🪡<b id="stNeedle">0</b></span>
+  <span class="badge" title="护盾：抵挡一次水柱">🛡️<b id="stShield">0</b></span>
+  <span class="badge" title="推推手：顶着泡泡把它推走">👋<b id="stGlove">–</b></span>
+  <span class="badge" id="bCurse" style="display:none;background:#e7d6ff">💀<b id="stCurse"></b></span>
+  <span class="badge">第 <b id="stRound">1</b> 关</span>
+  <span class="badge">敌人 <b id="stEn">3</b></span>
+  <span class="badge">分数 <b id="stScore">0</b></span>
+  <button class="badge" id="btnPause">⏸</button>
+  <button class="badge" id="btnMute">🔊</button>
+</div>
+
+<div id="stage">
+  <canvas id="game"></canvas>
+
+  <div class="overlay hide" id="msg">
+    <div class="pane"></div>
+    <div class="card">
+      <div id="msgTitle">🎉 通关！</div>
+      <div id="msgSub"></div>
+      <div class="btnRow">
+        <button class="btn" id="msgBtn">下一关</button>
+        <button class="btn btn2" id="msgBtn2">回主菜单</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="title">
+  <h1>泡泡堂<span>· 大 作 战 ·</span></h1>
+  <canvas id="pv" width="300" height="120"></canvas>
+  <div id="levelSel">
+    <button class="lv" data-i="0"><i>🌼</i>第1关<span>青青草原</span><em></em></button>
+    <button class="lv" data-i="1"><i>🏖️</i>第2关<span>阳光沙滩</span><em></em></button>
+    <button class="lv" data-i="2"><i>❄️</i>第3关<span>冰雪乐园</span><em></em></button>
+    <button class="lv" data-i="3"><i>🏰</i>第4关<span>魔王城堡</span><em></em></button>
+  </div>
+  <button class="btn" id="btnStart">开 始 游 戏</button>
+  <div class="howto">
+    <kbd>W A S D</kbd> / <kbd>方向键</kbd> 移动 &nbsp; <kbd>空格</kbd> 放泡泡<br>
+    被困时狂按按键挣脱！碰一下被困的敌人就能消灭它<br>
+    💧威力 🫧泡泡 ⚡速度 ❤️生命 🪡自动脱困 👋推泡泡 🛡️护盾 💥威力拉满 💀小心诅咒！<br>
+    四大主题地图：草原 → 沙滩 → 冰雪 → 魔王城堡 👑<br>
+    冰面会加速、泥地会减速、草丛能藏身、传送门直达对面！<br>
+    📱 手机：左半屏按住拖动 = 摇杆移动，右下 🫧 放泡泡（被困时连点它挣脱）<br>
+    <kbd>P</kbd> 暂停 &nbsp; <kbd>M</kbd> 静音
+  </div>
+</div>
+
+<div id="touch">
+  <div id="stickZone"></div>
+  <div id="stickHint">✛</div>
+  <div id="stickBase"><div id="stickKnob"></div></div>
+  <button id="btnBubble">🫧</button>
+</div>
+
+<div class="foot">Q版泡泡堂 · 纯前端小游戏 · Canvas 手绘</div>
+
+<script src="game.js"></script>
+</body>
+</html>

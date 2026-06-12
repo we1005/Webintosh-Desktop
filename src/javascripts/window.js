@@ -8,16 +8,30 @@ window.specialCloses = {};
 let activeDraggingWindow = null;
 let activeResizingWindow = null;
 
+// 任何入口（Dock/菜单/终端 open/访达）打开应用都同步 Dock 运行灯与状态
+function syncDockLight(name, on) {
+  if (window.appStatus) window.appStatus[name] = on;
+  if (name === "启动台") return;   // 启动台是覆盖层，macOS 不显示运行灯
+  const img = document.querySelector(`#dock img[alt="${name}"]`);
+  const light = img && img.parentElement.querySelector(".light");
+  if (light) light.classList.toggle("on", on);
+}
+
 export function create(file, name, light = null, centered = false) {
   const cleanFile = file.split("/").pop().split(".")[0];
   if (!name) name = cleanFile;
   const existing = document.getElementById(name);
   if (existing) {
-    bringToFront(existing, name);
+    // 已最小化的窗口：恢复；否则置顶
+    if (existing.isMinimized && existing._restoreWindow) existing._restoreWindow();
+    else bringToFront(existing, name);
     return;
   }
+  syncDockLight(name, true);
 
-  fetch(file)
+  // 缓存破坏:HTML/CSS 与 JS 保持一致地带版本戳,否则改了 HTML/CSS 普通刷新看不到
+  const bust = `?v=${Date.now()}`;
+  fetch(file + bust)
     .then((response) => {
       if (response.status !== 200) {
         createAlert(
@@ -51,13 +65,13 @@ export function create(file, name, light = null, centered = false) {
           addResizeListener(newWin, resizer);
         }
         let script = document.createElement("script");
-        script.src = `./src/javascripts/apps/${cleanFile}.js?v=${Date.now()}`;
+        script.src = `./src/javascripts/apps/${cleanFile}.js${bust}`;
         script.type = "module";
         script.setAttribute("app", cleanFile);
         document.body.appendChild(script);
         let link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = `./assets/stylesheets/apps/${cleanFile}/index.css`;
+        link.href = `./assets/stylesheets/apps/${cleanFile}/index.css${bust}`;
         document.querySelector("head").appendChild(link);
       });
     })
@@ -87,6 +101,11 @@ export function setWindowPosition(win, left, top, width, height, zIndex) {
 export function resetWindowListeners(name, light = null) {
   let windows = document.querySelectorAll(".window");
   windows.forEach((win) => {
+    // create() 会在 150/300/450ms 重试三次且遍历所有窗口，
+    // 不加守卫会给每个窗口重复绑定拖拽/按钮监听
+    if (win._wmBound) return;
+    win._wmBound = true;
+
     let closeBtn = win.querySelector(".wintools .red");
     let miniBtn =
       win.querySelector(".wintools .yellow") ||
@@ -103,7 +122,7 @@ export function resetWindowListeners(name, light = null) {
       const s = document.querySelector(`script[app="${name}"]`);
       if (s) s.remove();
       if (light) light.classList.remove("on");
-      if (window.appStatus) window.appStatus[name] = false;
+      syncDockLight(name, false);
     };
 
     // 切换拉伸窗口至桌面空白（保留顶部状态栏和底部dock的全屏）
@@ -185,22 +204,67 @@ export function resetWindowListeners(name, light = null) {
       }
     };
 
+    // 最小化：缩入 Dock 方向，点击 Dock 图标恢复
+    const minimizeWindow = () => {
+      if (win.isMinimized) return;
+      win.isMinimized = true;
+      const dock = document.getElementById("dock");
+      const dr = dock ? dock.getBoundingClientRect() : { x: innerWidth / 2, y: innerHeight };
+      const wr = win.getBoundingClientRect();
+      const dx = dr.x + dr.width / 2 - (wr.x + wr.width / 2);
+      const dy = dr.y - (wr.y + wr.height / 2);
+      win.style.transition = "transform 0.34s cubic-bezier(0.5, 0.05, 0.4, 1), opacity 0.34s ease";
+      win.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(0.08)`;
+      win.style.opacity = "0";
+      setTimeout(() => {
+        win.style.visibility = "hidden";
+        win.style.transition = "";
+        win.style.transform = "";
+        win.style.opacity = "";
+      }, 360);
+    };
+    const restoreWindow = () => {
+      if (!win.isMinimized) return;
+      win.isMinimized = false;
+      win.style.visibility = "";
+      const dock = document.getElementById("dock");
+      const dr = dock ? dock.getBoundingClientRect() : { x: innerWidth / 2, y: innerHeight };
+      const wr = win.getBoundingClientRect();
+      const dx = dr.x + dr.width / 2 - (wr.x + wr.width / 2);
+      const dy = dr.y - (wr.y + wr.height / 2);
+      win.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(0.08)`;
+      win.style.opacity = "0";
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        win.style.transition = "transform 0.34s cubic-bezier(0.2, 0.8, 0.3, 1.05), opacity 0.3s ease";
+        win.style.transform = "";
+        win.style.opacity = "1";
+        setTimeout(() => {
+          win.style.transition = "";
+          win.style.opacity = "";
+        }, 380);
+      }));
+      bringToFront(win, name);
+    };
+
     win._closeWindow = closeWindow;
     win._toggleStretchWindow = toggleStretchWindow;
     win._toggleFullscreenWindow = toggleFullscreenWindow;
+    win._minimizeWindow = minimizeWindow;
+    win._restoreWindow = restoreWindow;
 
     addWindowDrag(win, name);
 
     // 点击关闭按钮关闭窗口
     if (closeBtn) closeBtn.addEventListener("click", () => closeWindow());
     // 点击最小化按钮最小化窗口
-    // if (miniBtn) miniBtn.addEventListener("click", () => toggleMinimizeWindow());
+    if (miniBtn) miniBtn.addEventListener("click", () => minimizeWindow());
     // 点击最大化按钮最大化窗口
     if (zoomBtn)
       zoomBtn.addEventListener("click", () => toggleFullscreenWindow());
 
     // 双击窗口标题栏切换拉伸窗口至桌面空白（保留顶部状态栏和底部dock的全屏）
-    const wintools = win.querySelector(".wintools");
+    // 优先整个 .topbar（macOS 行为），无标题栏的窗口退回 .wintools
+    const wintools = win.querySelector(".topbar") || win.querySelector(".wintools");
     if (wintools) {
       wintools.addEventListener("dblclick", (e) => {
         if (
@@ -222,68 +286,128 @@ export function resetWindowListeners(name, light = null) {
   });
 }
 
+/* ------------------------------------------------------------
+ * 拖拽 / 缩放 —— GPU 合成器路径：
+ * - 拖动期间只写 transform: translate3d（不触发布局），松手时一次性
+ *   提交 left/top 并清除 transform；
+ * - mousemove 统一收敛到 requestAnimationFrame，避免高频写样式；
+ * - 交互期间 body.wm-interacting 屏蔽 iframe 指针事件，防止光标滑入
+ *   iframe 后丢失 mousemove。
+ * ------------------------------------------------------------ */
+
+let dragRaf = 0;
+let resizeRaf = 0;
+let resizeLastEvent = null;
+
+function setInteracting(on) {
+  document.body.classList.toggle("wm-interacting", on);
+}
+
 function addWindowDrag(windowElement, name) {
   windowElement.addEventListener("mousedown", function (e) {
     if (e.target.closest(".wintools div") || e.target.closest(".resizer")) {
       return;
     }
 
+    const rect = windowElement.getBoundingClientRect();
     activeDraggingWindow = {
       element: windowElement,
       name: name,
-      offsetX: e.clientX - windowElement.getBoundingClientRect().left,
-      offsetY: e.clientY - windowElement.getBoundingClientRect().top,
+      grabX: e.clientX - rect.left,
+      grabY: e.clientY - rect.top,
+      startLeft: rect.left,
+      startTop: rect.top,
+      lastX: e.clientX,
+      lastY: e.clientY,
+      targetLeft: rect.left,
+      targetTop: rect.top,
     };
 
+    windowElement.style.willChange = "transform";
+    setInteracting(true);
     bringToFront(windowElement, name);
     e.preventDefault();
   });
 }
 
+function applyDrag() {
+  dragRaf = 0;
+  const d = activeDraggingWindow;
+  if (!d) return;
+  const minY = fd ? fd.offsetHeight : 0;
+  d.targetLeft = d.lastX - d.grabX;
+  d.targetTop = Math.max(minY, d.lastY - d.grabY);
+  d.element.style.transform =
+    `translate3d(${d.targetLeft - d.startLeft}px, ${d.targetTop - d.startTop}px, 0)`;
+}
+
+// 拖动中退出最大化/拉伸后窗口几何改变：以当前光标重新锚定
+function reanchorDrag(d) {
+  const w = d.element.offsetWidth;
+  d.grabX = Math.min(d.grabX, Math.max(40, w - 40));
+  d.startLeft = d.lastX - d.grabX;
+  d.startTop = Math.max(fd ? fd.offsetHeight : 0, d.lastY - d.grabY);
+  d.element.style.left = d.startLeft + "px";
+  d.element.style.top = d.startTop + "px";
+  d.element.style.transform = "";
+}
+
+function applyResize() {
+  resizeRaf = 0;
+  const win = activeResizingWindow;
+  if (!win || !resizeLastEvent) return;
+  const rect = win.getBoundingClientRect();
+  const newWidth = resizeLastEvent.clientX - rect.left;
+  const newHeight = resizeLastEvent.clientY - rect.top;
+  if (newWidth > 200) win.style.width = newWidth + "px";
+  if (newHeight > 150) win.style.height = newHeight + "px";
+}
+
 document.addEventListener("mousemove", function (e) {
   if (activeDraggingWindow) {
-    const { element, offsetX, offsetY } = activeDraggingWindow;
+    const d = activeDraggingWindow;
+    d.lastX = e.clientX;
+    d.lastY = e.clientY;
 
-    if (element.isStretched && element._toggleStretchWindow) {
-      element._toggleStretchWindow(false);
+    if (d.element.isStretched && d.element._toggleStretchWindow) {
+      d.element._toggleStretchWindow(false);
+      reanchorDrag(d);
     }
-    if (element.isFullscreen && element._toggleFullscreenWindow) {
-      element._toggleFullscreenWindow(false);
+    if (d.element.isFullscreen && d.element._toggleFullscreenWindow) {
+      d.element._toggleFullscreenWindow(false);
+      reanchorDrag(d);
     }
 
-    const newX = e.clientX - offsetX;
-    const newY = e.clientY - offsetY;
-
-    const minY = fd ? fd.offsetHeight : 0;
-    const clampedY = Math.max(minY, newY);
-
-    element.style.left = newX + "px";
-    element.style.top = clampedY + "px";
+    if (!dragRaf) dragRaf = requestAnimationFrame(applyDrag);
   }
 
   if (activeResizingWindow) {
-    const rect = activeResizingWindow.getBoundingClientRect();
-    const newWidth = e.clientX - rect.left;
-    const newHeight = e.clientY - rect.top;
-
-    if (newWidth > 200) activeResizingWindow.style.width = newWidth + "px";
-    if (newHeight > 150) activeResizingWindow.style.height = newHeight + "px";
+    resizeLastEvent = e;
+    if (!resizeRaf) resizeRaf = requestAnimationFrame(applyResize);
   }
 });
 
 function addResizeListener(windowElement, resizer) {
   resizer.addEventListener("mousedown", function (e) {
     activeResizingWindow = windowElement;
+    setInteracting(true);
     e.preventDefault();
   });
 }
 
 document.addEventListener("mouseup", function () {
   if (activeDraggingWindow) {
-    updateMenu(activeDraggingWindow.name);
+    const d = activeDraggingWindow;
+    // 提交最终位置，回到无 transform 状态
+    d.element.style.left = d.targetLeft + "px";
+    d.element.style.top = d.targetTop + "px";
+    d.element.style.transform = "";
+    d.element.style.willChange = "";
+    updateMenu(d.name);
     activeDraggingWindow = null;
   }
   activeResizingWindow = null;
+  setInteracting(false);
 });
 
 export function bringToFront(windowElement, name) {

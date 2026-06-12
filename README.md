@@ -6,15 +6,17 @@
 
 ![Webintosh 预览](https://img.shields.io/badge/macOS-Sequoia_15-red?style=for-the-badge&logo=apple)
 ![开源协议](https://img.shields.io/badge/License-GPL3-green?style=for-the-badge&logo=gnu)
-![版本](https://img.shields.io/badge/Version-1.5-blue?style=for-the-badge)
+![版本](https://img.shields.io/badge/Version-2.0-blue?style=for-the-badge)
 
-**在浏览器中体验 macOS Sequoia 的优雅界面**
+**在浏览器中体验 macOS Sequoia 的优雅界面 —— 现在它是一个可用的 WebOS**
 
 </div>
 
 ## 🌟 项目介绍
 
-`Webintosh` 是一个开源项目，旨在通过现代 Web 技术（`HTML 5`、`CSS 3`、`Java Script`）精确还原 macOS Sequoia（15.7）操作系统的用户界面和交互体验。该项目完全在浏览器中运行，无需任何安装或系统要求。
+`Webintosh` 是一个开源项目，用现代 Web 技术精确还原 macOS Sequoia 的界面与交互，**完全在浏览器中运行，无需安装**。
+
+在还原界面之上，它已经具备**真实可用的能力**：持久文件系统（OPFS / 可选 FastAPI 双后端）、访达 / 终端 / 文本编辑共享同一份文件、窗口内用 v86 真实启动 FreeDOS、WebGPU 驱动的音乐可视化，以及触屏设备自动切换的 iPhone 5s（iOS 7）形态。
 
 **注意**：本项目仅用于**学习、研究和展示目的**，并非真正的操作系统。我们不隶属于 Apple Inc.，macOS 是 Apple Inc. 的注册商标。
 
@@ -30,38 +32,101 @@
   </div>
 </div>
 
+## 🧬 Webintosh OS —— 完整可用的 WebOS
+
+不再只是界面复刻：现在它有**真实的文件系统与应用生态**。
+
+### 持久文件系统（双后端，可切换）
+- 统一入口 `os/vfs.js`：访达、终端、文本编辑、桌面图标共享同一份文件，跨窗口实时同步（BroadcastChannel）。
+- **OPFS 后端（默认）**：浏览器原生 Origin Private File System，零后端、纯静态部署即可用，刷新/重启浏览器数据不丢。
+- **FastAPI 后端（可选）**：`cd server && ./.venv/bin/python main.py`（或 `uv venv && uv pip install -r requirements.txt`），默认端口 8787，数据落在 `server/data/`，并附带全站静态托管（单进程跑全部）。
+- 切换方式任选：URL 参数 `?backend=remote`、终端命令 `backend remote` / `backend opfs`、或 localStorage `webintosh.backend`；远端不可达自动回退 OPFS。
+
+### 内置应用
+- **访达** —— 真实浏览/新建/重命名/删除文件，面包屑导航、返回/前进、右键菜单，双击文本文件直达文本编辑，VFS 变更自动刷新。
+- **终端** —— 1:1 Terminal.app 外观：`ls/cd/cat/echo >/mkdir/rm/mv/cp/df/history/open/backend` 等全套命令对接 VFS，Tab 补全、↑↓ 历史、`neofetch` 彩蛋。
+- **文本编辑** —— TextEdit 风格，Cmd+S 保存到 VFS，脏标记「已编辑」。
+- **虚拟机** —— 基于 [v86](https://github.com/copy/v86)（Wasm x86 模拟器）在窗口里**真实启动 FreeDOS**（试试 `dir`，或 `invaders`/`tetris` 小游戏）；支持暂停/重启/Ctrl+Alt+Del/载入自定义 .img/.iso；运行时与镜像全部本地化（约 3MB），窗口不可见自动暂停 CPU。
+- **桌面图标** —— `/Desktop` 目录实时渲染为桌面图标，双击打开。
+
+### 📱 iPhone 5s 模式（iOS 7）
+触屏小屏设备访问自动进入 `ios/`（桌面浏览器加 `?desktop` 强制桌面版，直接访问 `ios/` 可在 iPhone 5s 机身边框中预览）：
+- 经典 iOS 7 锁屏：超细字重时钟、「滑动来解锁」流光、拖拽解锁 + SpringBoard 缩放淡入；
+- 全 CSS/SVG 手绘扁平图标（日历显示真实日期、时钟真实走针）、毛玻璃 Dock、视差壁纸；
+- 音乐 / Spotify 以 iOS 缩放动画全屏打开，home 横条返回；其余应用弹 iOS 7 风格对话框。
+
+## ⚡ GPU 性能与音乐播放器
+
+- **合成器路径动画** —— Dock 放大与窗口拖拽已改造为只触碰 `transform`（`scale` / `translate3d`）的 GPU 合成器路径：Dock 不再逐帧改写 `width/height`（旧实现每帧触发整条 Dock 重排），玻璃背景用 `scaleX` 跟随展宽；窗口拖拽期间只写 `translate3d`，松手一次性提交 `left/top`，并自动屏蔽 iframe 指针事件防止丢帧。
+- **🎵 Spotify**（Dock 内置）—— 1:1 复刻暗色界面：资料库侧栏、悬停滑出的绿色播放钮、播放行均衡器动画、底部播放条，附全屏频谱可视化——**WebGPU（WGSL）渲染，WebGL2 自动回退**，AnalyserNode 实时 FFT 直传 GPU 纹理。
+- **🍎 音乐（Apple Music）**（Dock 内置）—— 1:1 复刻浅色界面：顶部 LCD 播放器、半透明侧栏；沉浸式播放页：**WebGPU 域扭曲流体氛围背景**（随专辑配色与低频能量呼吸）、封面随播放状态弹簧缩放、逐行歌词（未唱行模糊淡出、点击跳转）。
+- **运行时合成曲库**（`apps/music-core.js`）—— 8 首曲目 / 2 张专辑由 `OfflineAudioContext` 在独立线程离线合成（鼓组/贝斯/合成垫/琶音/卷积混响），专辑封面由 Canvas 程序化生成，**零外部音频与图片资源、零版权问题**。
+
 ## ✨ 特性
 
-### 🖥️ 核心界面组件
-- **完整的桌面环境** - 壁纸等基本部分
-- **Dock 栏** - 具有图标放大效果、应用启动器和运行指示器
-- **菜单栏** - 包含 Apple 菜单、活动应用菜单、系统状态图标和控制中心
-- **启动台** - 应用启动网格界面
+### 🖥️ 桌面环境
+- **菜单栏** —— Apple 菜单、随焦点切换的应用菜单、状态图标、实时时钟
+- **Dock** —— GPU 合成器路径放大动画、运行指示灯、点击启动 / 最小化恢复
+- **窗口管理** —— 拖动、缩放、红黄绿灯（关闭 / 最小化飞入 Dock / 全屏）、双击拉伸、焦点置顶
+- **桌面** —— 右键菜单（新建文件夹 / 文本文件，写入文件系统）、`/Desktop` 实时图标、启动台
 
-### 🎯 交互功能
-- **可拖拽窗口** - 带有最小化、最大化和关闭按钮
-- **系统设置** - 模拟系统设置界面
+### 🧩 内置应用
+访达、终端、文本编辑、虚拟机（FreeDOS）、Spotify、音乐（Apple Music）、计算器、系统设置、关于本机、Safari
 
-### 🎨 视觉效果
-- **Sequoia 设计语言** - 精确的色彩、阴影和动画
-- **平滑动画** - 使用 CSS 或 Java Script 实现原生级过渡效果
+### 🎨 视觉与性能
+- Sequoia 设计语言：色彩、阴影、毛玻璃、圆角窗口
+- 动画走 `transform` / `opacity` 合成器路径，主线程零布局抖动
+- 可视化特效 WebGPU 优先、WebGL2 自动回退
+
+## 🗺️ 路线图 / 已知差距
+
+已识别、尚待打磨的 macOS 还原度差距（详见 [架构说明](docs/架构说明.md)）：
+
+- [ ] 菜单栏"文件/编辑/显示/前往/窗口/帮助"下拉菜单内容（目前仅  与访达菜单可展开）
+- [ ] 访达工具栏：面包屑移至底部路径栏、补搜索框与视图切换段控
+- [ ] 红绿灯悬停显示 `✕ − +` 符号
+- [ ] "关于本机"窗口改为接近不透明的浅灰面板
+- [ ] 菜单栏时钟半角冒号、日期格式贴近 macOS
 
 ## 🚀 快速开始
 
+整个项目是**纯静态站点**，无需构建、无需安装依赖。只需一个静态服务器，并通过 HTTP 访问（不能用 `file://` 直接打开）。**现已合并为单一自包含仓库**（开机流程在 `boot-experience/` 子目录）。
+
+```bash
+# 以 Webintosh-Desktop 为 Web 根
+cd /path/to/Webintosh-Desktop
+python3 -m http.server 8765
+```
+
+浏览器打开任一入口：
+
+| 入口 | 地址 |
+|------|------|
+| **桌面（直接进）** | http://localhost:8765/?desktop |
+| **完整开机流程** | http://localhost:8765/boot-experience/ （登录密码：`Ventura` / `Sonoma` / `Sequoia`） |
+| **iPhone 5s 模式** | http://localhost:8765/ios/ |
+
+默认文件系统用浏览器 **OPFS**，数据持久保存、**无需后端**。需要服务器存储（多端共享）时再启用可选的 FastAPI 后端。
+
+📖 **详细文档：**
+- [启动与使用指南](docs/启动与使用.md) —— 启动方式、入口区别、各应用用法、常见问题
+- [架构说明](docs/架构说明.md) —— 目录结构、文件系统、窗口/应用机制、GPU 渲染、测试方法
+
 ### 在线体验
-直接访问已静态部署的演示站点：
-
-**主项目:** [https://mengobs.github.io/Webintosh](https://mengobs.github.io/Webintosh)
-
-**桌面部分:** [https://mengobs.github.io/Webintosh-Desktop](https://mengobs.github.io/Webintosh-Desktop)
+**主项目:** [https://mengobs.github.io/Webintosh](https://mengobs.github.io/Webintosh)　**桌面部分:** [https://mengobs.github.io/Webintosh-Desktop](https://mengobs.github.io/Webintosh-Desktop)
 
 ## 🛠️ 技术栈
 
 | 技术 | 用途 |
 |------|------|
 | `HTML 5` | 语义化结构和内容 |
-| `CSS 3` | 样式、动画和布局 |
-| `Java Script` | 交互逻辑和状态管理 |
+| `CSS 3` | 样式、动画、合成器路径动画（transform/opacity） |
+| `JavaScript (ES Module)` | 交互逻辑与状态管理 |
+| `OPFS / IndexedDB` | 浏览器端持久文件系统（默认后端，零依赖） |
+| `WebGPU / WebGL2` | 频谱可视化、流体氛围背景（WebGPU 优先，WebGL2 回退） |
+| `Web Audio (OfflineAudioContext)` | 曲目离线合成、播放与实时频谱分析 |
+| `WebAssembly (v86)` | 「虚拟机」应用：窗口内真实启动 FreeDOS |
+| `Python (FastAPI)` | 可选后端：文件系统 REST API + 全站静态托管 |
 
 ## 📝 许可证
 

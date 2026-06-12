@@ -1,0 +1,17 @@
+/* 桥接 Webintosh-Desktop 的字体资源到音乐应用使用的字体族名 */
+@font-face {
+    src: url(../assets/fonts/sf-pro-display_regular.woff2);
+    font-family: 'SFPro-Regular';
+}
+@font-face {
+    src: url(../assets/fonts/sf-pro-display_semibold.woff2);
+    font-family: 'SFPro-Bold';
+}
+@font-face {
+    src: url(../assets/fonts/PingFangSC-Regular.woff2);
+    font-family: 'PingFang-Regular';
+}
+@font-face {
+    src: url(../assets/fonts/PingFangSC-Semibold.woff2);
+    font-family: 'PingFang-Bold';
+}

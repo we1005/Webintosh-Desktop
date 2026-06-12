@@ -1,6 +1,15 @@
 import { finderbar } from './finderbar.js';
 import { dock } from './dock.js';
 import { createContextMenu, createDesktopFile } from './ui/contextMenu.js';
+import vfs, { joinPath } from '../../os/vfs.js';
+
+// 在 /Desktop 下取不重名的名称（扩展名保持在末尾）
+async function uniqueDesktopName(base, ext = '') {
+    const names = new Set((await vfs.list('/Desktop')).map(e => e.name));
+    let name = base + ext;
+    for (let i = 2; names.has(name); i++) name = `${base} ${i}${ext}`;
+    return name;
+}
 
 const desktop = document.getElementById("desktop");
 const containers = document.querySelectorAll(".desktop .container");
@@ -57,8 +66,15 @@ document.addEventListener("contextmenu", (e) => {
         document.querySelectorAll(".item.selected").forEach(el => el.classList.remove("selected"));
 
         createContextMenu(e.clientX, e.clientY, [
-            { label: "新建文件夹", action: () => createDesktopFile("folder", "新建文件夹") },
-            // { label: "新建文本文档", action: () => createDesktopFile("file", "新建文本文档.txt") },
+            {
+                label: "新建文件夹",
+                // 走 VFS：持久化到 /Desktop，desktop-sync 会自动渲染图标
+                action: async () => vfs.mkdir(joinPath('/Desktop', await uniqueDesktopName('未命名文件夹'))),
+            },
+            {
+                label: "新建文本文档",
+                action: async () => vfs.writeText(joinPath('/Desktop', await uniqueDesktopName('未命名', '.txt')), ''),
+            },
             { type: "separator" },
             { label: "显示简介", disabled: true },
             { type: "separator" },

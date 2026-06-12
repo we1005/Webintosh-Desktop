@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="ppt-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#aee4ff"/>
+      <stop offset="1" stop-color="#58c8ff"/>
+    </linearGradient>
+    <radialGradient id="ppt-b1" cx="38%" cy="32%" r="70%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="0.45" stop-color="#ff9bb5"/>
+      <stop offset="1" stop-color="#ff7b9c"/>
+    </radialGradient>
+    <radialGradient id="ppt-b2" cx="38%" cy="32%" r="70%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="0.5" stop-color="#9be0ff"/>
+      <stop offset="1" stop-color="#58c8ff"/>
+    </radialGradient>
+    <radialGradient id="ppt-b3" cx="38%" cy="32%" r="70%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="0.5" stop-color="#ffe27a"/>
+      <stop offset="1" stop-color="#ffd34d"/>
+    </radialGradient>
+    <filter id="ppt-sh" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect x="8" y="8" width="104" height="104" rx="24" fill="url(#ppt-bg)"/>
+  <g filter="url(#ppt-sh)">
+    <circle cx="46" cy="52" r="26" fill="url(#ppt-b1)"/>
+    <circle cx="78" cy="44" r="18" fill="url(#ppt-b2)"/>
+    <circle cx="72" cy="78" r="20" fill="url(#ppt-b3)"/>
+  </g>
+  <circle cx="38" cy="44" r="6" fill="#fff" opacity="0.9"/>
+  <circle cx="72" cy="38" r="4" fill="#fff" opacity="0.9"/>
+  <circle cx="65" cy="71" r="4.5" fill="#fff" opacity="0.9"/>
+</svg>

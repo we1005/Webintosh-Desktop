@@ -1,18 +1,19 @@
+/* 弹跳动画使用独立的 translate 属性，与放大用的 transform(scale) 互不覆盖 */
 @keyframes parabola {
   0% {
-    transform: translateY(0);
+    translate: 0 0;
     animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
   50% {
-    transform: translateY(-20px);
+    translate: 0 -20px;
     animation-timing-function: cubic-bezier(0.55, 0.085, 0.68, 0.53);
   }
   90% {
-    transform: translateY(-4px);
+    translate: 0 -4px;
     animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
   100% {
-    transform: translateY(0);
+    translate: 0 0;
   }
 }
 @keyframes scale {
@@ -84,6 +85,7 @@
 }
 
 .dock {
+  position: relative;
   width: auto;
   height: 56.5px;
   display: inline-flex;
@@ -96,25 +98,38 @@
   -moz-user-select: none;
        user-select: none;
   -webkit-user-select: none;
-  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3333333333), inset 0 0 2px rgba(26, 26, 26, 0.7333333333);
   z-index: 2049;
-  backdrop-filter: blur(50px) saturate(1.8);
-  background: rgba(246, 246, 246, 0.46);
   transform: translateY(80px);
   animation: come 0.7s ease forwards;
   animation-delay: 0.2s;
+}
+/* 玻璃背景独立成层：放大时用 scaleX 跟随展宽（纯 transform，合成器路径） */
+.dock::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 16px;
+  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3333333333), inset 0 0 2px rgba(26, 26, 26, 0.7333333333);
+  backdrop-filter: blur(50px) saturate(1.8);
+  -webkit-backdrop-filter: blur(50px) saturate(1.8);
+  background: rgba(246, 246, 246, 0.46);
+  transform: scaleX(var(--dock-stretch, 1));
+  transform-origin: 50% 100%;
+  will-change: transform;
 }
 .dock .container {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  will-change: transform;
 }
 .dock .container img {
   width: 50px;
   height: 50px;
   transition: filter 0.05s;
-  will-change: width;
+  will-change: transform;
   transform-origin: bottom;
 }
 .dock .container img.opening {

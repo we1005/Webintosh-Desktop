@@ -53,4 +53,37 @@
   height: 1px;
   margin: 4px 0;
   align-self: center;
-}/*# sourceMappingURL=ui.css.map */
+}
+
+/* ---- 窗口基类（集中兜底；ui/window.css 是死文件从未加载）----
+   1. position:absolute —— body 是 flex(space-between)容器，窗口非 absolute
+      会变成 flex 子项把 Dock 顶离底部、且 left/top 失效无法拖动。
+   2. overflow:hidden + 默认圆角 —— 保证内容(尤其 iframe 应用:音乐/Spotify/
+      虚拟机)被窗口圆角裁切，不会方角溢出。各应用可覆盖 border-radius。 */
+.window {
+  position: absolute;
+  overflow: hidden;
+  border-radius: 11px;
+}
+
+/* ---- 窗口交互（拖拽/缩放）期间：屏蔽 iframe 指针事件，
+        防止光标滑入 iframe 后丢失 mousemove ---- */
+body.wm-interacting iframe {
+  pointer-events: none;
+}
+body.wm-interacting {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---- 窗口右下角缩放手柄 ---- */
+.window .resizer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  cursor: nwse-resize;
+  z-index: 10;
+}
+/*# sourceMappingURL=ui.css.map */

@@ -1,0 +1,36 @@
+div[usefultools] {
+    background: #3f423f;
+    width: auto;
+    height: auto;
+    border-radius: 16px;
+    padding: 16px;
+    display: inline-flex;
+    flex-direction: column;
+    /* align-items: center; */
+    justify-content: center;
+}
+
+div[toolschild] {
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 8px;
+}
+
+div[toolschild] img {
+    width: 64px;
+    height: 64px;
+    margin-right: 8px;
+}
+
+div[toolschild] p[title] {
+    font-size: 13px;
+    margin: 0;
+}
+
+div[toolschild] p[text] {
+    font-size: 11px;
+    margin: 0;
+    margin-top: 3px;
+    opacity: 0.6;
+}

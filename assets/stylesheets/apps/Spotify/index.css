@@ -1,0 +1,57 @@
+.spwin.window {
+    width: min(1080px, calc(100vw - 90px));
+    height: min(680px, calc(100vh - 140px));
+    top: calc(50% - min(340px, (100vh - 140px) / 2));
+    left: calc(50% - min(540px, (100vw - 90px) / 2));
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 12px;
+    background: #000;
+}
+.spwin .topbar {
+    flex: none;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    background: #161616;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.spwin .topbar .wintools {
+    display: inline-flex;
+    margin-left: 10px;
+    z-index: 2;
+}
+.spwin .topbar .wintools .red,
+.spwin .topbar .wintools .yellow,
+.spwin .topbar .wintools .green {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: solid 0.5px rgba(0, 0, 0, 0.35);
+}
+.spwin .topbar .wintools .red { background: #ff5f57; }
+.spwin .topbar .wintools .yellow { background: #febc2e; }
+.spwin .topbar .wintools .green { background: #28c840; margin-right: 0; }
+.spwin .topbar .title {
+    position: absolute;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.72);
+    font-family: 'SFPro-Semibold', 'PingFangSC-Semibold';
+    pointer-events: none;
+}
+.spwin .frame {
+    flex: 1;
+    min-height: 0;
+}
+.spwin .frame iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    background: #121212;
+}

@@ -1,0 +1,112 @@
+* {
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body {
+    height: 100vh;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    background: url(../images/Wallpaper.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+div[container] {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-fitler: blur(10px);
+}
+
+div[main] {
+    position: relative;
+    min-width: 610px;
+    min-height: 500px;
+    width: 47.5%;
+    height: 70%;
+    background: #eee;
+    border-radius: 16px;
+    box-shadow: 0 36px 100px black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+img {
+    width: 156px;
+    height: 156px;
+}
+
+p {
+    margin: 0;
+}
+
+p[title] {
+    font-family: 'SFPro-Bold', 'PingFang-Bold';
+    font-size: 21px;
+    margin-top: 5px;
+}
+
+p[subtitle] {
+    margin-top: 0.1px;
+    opacity: 0.5;
+    font-size: 14px;    
+}
+
+p[description] {
+    width: 75%;
+    margin-top: 30px;
+    font-size: 16px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+p[license] {
+    opacity: 0.375;
+    font-size: 10px;
+    margin-top: 12.5px;
+}
+
+hr {
+    border: none;
+    width: 100%;
+    height: 1px;
+    background: #a8a8a8ac;
+}
+
+a[link] {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+div[bottom-content] {
+    height: auto;
+    width: 100%;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
+div[inner-content] {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+widget-button {
+    margin-top: 0;
+    margin-right: 15px;
+    margin-bottom: 10px;
+}

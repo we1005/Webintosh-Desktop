@@ -5,6 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>macOS Sequoia</title>
+    <script>
+        // 触屏小屏设备 → iPhone 5s（iOS 7）模式；加 ?desktop 可强制桌面版
+        if (matchMedia('(pointer: coarse)').matches
+            && Math.min(screen.width, screen.height) < 800
+            && !location.search.includes('desktop')) {
+            location.replace('./ios/');
+        }
+    </script>
 
     <link rel="stylesheet" href="./assets/stylesheets/main/main.css" />
     <link rel="stylesheet" href="./assets/stylesheets/finderbar/finderbar.css" />
@@ -80,6 +88,11 @@
     <script type="module" src="./src/javascripts/finderbar.js"></script>
     <script type="module" src="./src/javascripts/dock.js"></script>
     <script type="module" src="./src/javascripts/desktop.js"></script>
+    <script type="module">
+        // 桌面文件持久化：把 VFS /Desktop 目录渲染为桌面图标
+        import { initDesktopFiles } from "./os/desktop-sync.js";
+        initDesktopFiles();
+    </script>
     <!-- <script type="module" src="./src/javascripts/cursor.js"></script> -->
     <script type="module" src="./src/javascripts/window.js"></script>
     <script type="module" src="./src/javascripts/ui/alert.js"></script>

@@ -1,0 +1,36 @@
+body {
+    --grayboot-bg: #bfbfbf;
+    --grayboot-color: #777;
+    --boot-bg: #000;
+    --boot-color: #fff;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--boot-bg);
+    color: var(--boot-color);
+}
+
+img[logo] {
+    width: 192px;
+    height: 192px;
+    margin-top: 25vh;
+    opacity: 0;
+}
+
+div[frame] {
+    width: auto;
+    height: auto;
+    margin-top: 17.5vh;
+    overflow: hidden;
+}
+
+p[state] {
+    /* display: none; */
+    text-align: center;
+    margin: 0;
+}

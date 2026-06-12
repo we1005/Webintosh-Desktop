@@ -9,29 +9,29 @@
         </div>
         <div class="sidebar-list">
             <div class="group-title">个人收藏</div>
-            <div class="item">
-                <img class="icon" src="./assets/images/airplay.blue.svg">
-                <span>隔空投送</span>
-            </div>
-            <div class="item">
-                <img class="icon" src="./assets/images/clock.blue.svg">
-                <span>最近使用</span>
-            </div>
-            <div class="item">
-                <img class="icon" src="./assets/images/menubar.dock.rectangle.blue.svg">
-                <span>应用程序</span>
-            </div>
-            <div class="item active">
+            <div class="item" data-path="/Desktop">
                 <img class="icon" src="./assets/images/menubar.dock.rectangle.blue.svg">
                 <span>桌面</span>
             </div>
-            <div class="item">
+            <div class="item" data-path="/Documents">
                 <img class="icon" src="./assets/images/document.blue.svg">
                 <span>文稿</span>
             </div>
-            <div class="item">
+            <div class="item" data-path="/Downloads">
                 <img class="icon" src="./assets/images/arrow.down.circle.blue.svg">
                 <span>下载</span>
+            </div>
+            <div class="item" data-path="/Music">
+                <img class="icon tint" src="./assets/images/speaker.wave.3.fill.svg">
+                <span>音乐</span>
+            </div>
+            <div class="item" data-path="/Pictures">
+                <img class="icon tint" src="./assets/images/photo.circle.svg">
+                <span>图片</span>
+            </div>
+            <div class="item" data-path="/Applications">
+                <img class="icon" src="./assets/images/menubar.dock.rectangle.blue.svg">
+                <span>应用程序</span>
             </div>
         </div>
     </div>
@@ -39,12 +39,17 @@
     <div class="right">
         <div class="toolbar">
             <div class="navigation-controls">
-                <img src="./assets/images/chevron.backward.svg" />
-                <img src="./assets/images/chevron.forward.svg" />
+                <button class="nav-btn nav-back" title="返回" disabled>
+                    <img src="./assets/images/chevron.backward.svg" draggable="false" />
+                </button>
+                <button class="nav-btn nav-forward" title="前进" disabled>
+                    <img src="./assets/images/chevron.forward.svg" draggable="false" />
+                </button>
             </div>
             <p class="title">桌面</p>
+            <div class="breadcrumb"></div>
         </div>
-        <div class="main-content" id="finder-content">
-        </div>
+        <div class="main-content" id="finder-content"></div>
+        <div class="statusbar"><span class="status-text">0 个项目</span></div>
     </div>
 </div>
