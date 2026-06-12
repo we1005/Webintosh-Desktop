@@ -6,18 +6,20 @@
     </linearGradient>
     <clipPath id="mir-clip"><rect x="0" y="0" width="50" height="50" rx="11.2"/></clipPath>
   </defs>
-  <g clip-path="url(#mir-clip)">
-    <rect x="0" y="0" width="50" height="50" fill="url(#mir-bg)"/>
-    <rect x="13" y="13" width="13" height="26" rx="3.4" fill="#5566cc" opacity="0.55"/>
-    <rect x="22" y="11" width="16" height="28" rx="3.8" fill="#ffffff"/>
-    <g fill="#c7cde6">
-      <rect x="25" y="16" width="3.4" height="3.4" rx="0.8"/>
-      <rect x="30.3" y="16" width="3.4" height="3.4" rx="0.8"/>
-      <rect x="25" y="21" width="3.4" height="3.4" rx="0.8"/>
-      <rect x="30.3" y="21" width="3.4" height="3.4" rx="0.8"/>
-      <rect x="25" y="26" width="3.4" height="3.4" rx="0.8"/>
-      <rect x="30.3" y="26" width="3.4" height="3.4" rx="0.8"/>
+  <g transform="translate(4.5,4.5) scale(0.82)">
+    <g clip-path="url(#mir-clip)">
+      <rect x="0" y="0" width="50" height="50" fill="url(#mir-bg)"/>
+      <rect x="13" y="13" width="13" height="26" rx="3.4" fill="#5566cc" opacity="0.55"/>
+      <rect x="22" y="11" width="16" height="28" rx="3.8" fill="#ffffff"/>
+      <g fill="#c7cde6">
+        <rect x="25" y="16" width="3.4" height="3.4" rx="0.8"/>
+        <rect x="30.3" y="16" width="3.4" height="3.4" rx="0.8"/>
+        <rect x="25" y="21" width="3.4" height="3.4" rx="0.8"/>
+        <rect x="30.3" y="21" width="3.4" height="3.4" rx="0.8"/>
+        <rect x="25" y="26" width="3.4" height="3.4" rx="0.8"/>
+        <rect x="30.3" y="26" width="3.4" height="3.4" rx="0.8"/>
+      </g>
+      <circle cx="30" cy="35.5" r="1.4" fill="#c7cde6"/>
     </g>
-    <circle cx="30" cy="35.5" r="1.4" fill="#c7cde6"/>
   </g>
 </svg>

@@ -6,13 +6,15 @@
     </linearGradient>
     <clipPath id="ot-clip"><rect x="0" y="0" width="50" height="50" rx="11.2"/></clipPath>
   </defs>
-  <g clip-path="url(#ot-clip)">
-    <rect x="0" y="0" width="50" height="50" fill="url(#ot-bg)"/>
-    <g fill="#8e8e96">
-      <rect x="13" y="13" width="10" height="10" rx="2.6"/>
-      <rect x="27" y="13" width="10" height="10" rx="2.6"/>
-      <rect x="13" y="27" width="10" height="10" rx="2.6"/>
-      <rect x="27" y="27" width="10" height="10" rx="2.6"/>
+  <g transform="translate(4.5,4.5) scale(0.82)">
+    <g clip-path="url(#ot-clip)">
+      <rect x="0" y="0" width="50" height="50" fill="url(#ot-bg)"/>
+      <g fill="#8e8e96">
+        <rect x="13" y="13" width="10" height="10" rx="2.6"/>
+        <rect x="27" y="13" width="10" height="10" rx="2.6"/>
+        <rect x="13" y="27" width="10" height="10" rx="2.6"/>
+        <rect x="27" y="27" width="10" height="10" rx="2.6"/>
+      </g>
     </g>
   </g>
 </svg>
