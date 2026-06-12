@@ -292,12 +292,16 @@ async function transcribe(blob) {
         ac.close();
     } catch (e) { $('#asr-out').textContent = '出错: ' + e.message; }
 }
+let micStarting = false;   // getUserMedia 异步期间防抖,避免快速双击开出第二路录音
 $('#asr-rec').addEventListener('click', async () => {
     const btn = $('#asr-rec');
+    if (micStarting) return;
     if (mediaRec && mediaRec.state === 'recording') {
         mediaRec.stop();
         return;
     }
+    micStarting = true;
+    btn.textContent = '… 启动中';
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         chunks = [];
@@ -310,7 +314,11 @@ $('#asr-rec').addEventListener('click', async () => {
         };
         mediaRec.start();
         btn.classList.add('rec'); btn.textContent = '■ 停止录音';
-    } catch (e) { $('#asr-out').textContent = '麦克风不可用: ' + e.message; }
+    } catch (e) {
+        $('#asr-out').textContent = '麦克风不可用: ' + e.message;
+        btn.textContent = '● 开始录音';
+    }
+    micStarting = false;
 });
 $('#asr-file').addEventListener('change', e => {
     const f = e.target.files[0];
