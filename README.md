@@ -106,7 +106,28 @@ python3 -m http.server 8765
 | **完整开机流程** | http://localhost:8765/boot-experience/ （登录密码：`Ventura` / `Sonoma` / `Sequoia`） |
 | **iPhone 5s 模式** | http://localhost:8765/ios/ |
 
-默认文件系统用浏览器 **OPFS**，数据持久保存、**无需后端**。需要服务器存储（多端共享）时再启用可选的 FastAPI 后端。
+默认文件系统用浏览器 **OPFS**，数据持久保存、**无需后端**。
+
+### 可选：启动 FastAPI 后端（服务器存储 / 多端共享）
+
+仅当你想把文件系统切到「服务器存储」时才需要。后端代码在 `server/`（已随仓库提供；`server/.venv` 与 `server/data` 不入库，按下面步骤本地生成）。
+
+```bash
+cd server
+# 首次：创建虚拟环境并装依赖（用 uv；也可用 python -m venv）
+uv venv --python 3.12 .venv
+uv pip install --python .venv/bin/python -r requirements.txt
+# 启动（默认 0.0.0.0:8787，并静态托管整个站点）
+./.venv/bin/python main.py
+```
+
+启动后，可只用这一个进程访问全站并启用后端：
+
+```
+http://localhost:8787/?backend=remote
+```
+
+切换后端的三种方式（任选）：URL 参数 `?backend=remote`、终端命令 `backend remote` / `backend opfs`、或 localStorage `webintosh.backend`；远端不可达会自动回退 OPFS。
 
 📖 **详细文档：**
 - [启动与使用指南](docs/启动与使用.md) —— 启动方式、入口区别、各应用用法、常见问题
