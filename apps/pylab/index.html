@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Python 实验室</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 100%; height: 100%; overflow: hidden; }
@@ -46,6 +48,14 @@ textarea#code {
     font: 13px/1.55 "SF Mono", Menlo, Consolas, monospace;
     padding: 12px 14px; tab-size: 4; white-space: pre;
 }
+/* CodeMirror 接管编辑区(CDN 失败时回退到上面的 textarea) */
+.editor-wrap .CodeMirror {
+    flex: 1; height: auto; min-height: 0;
+    font: 13px/1.55 "SF Mono", Menlo, Consolas, monospace;
+    background: #1b1b1f;
+}
+.editor-wrap .CodeMirror-gutters { background: #19191d; border-right: 1px solid rgba(255,255,255,.06); }
+.editor-wrap .CodeMirror-linenumber { color: #55555c; }
 .out-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 #stdout {
     flex: 1; min-height: 0; overflow: auto;
@@ -105,6 +115,10 @@ textarea#code {
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/addon/edit/closebrackets.min.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const stdout = $('#stdout'), plot = $('#plot');
@@ -246,11 +260,41 @@ plt.tight_layout()
 show()`,
 };
 
+/* ---------------- 编辑器:CodeMirror(语法高亮+智能缩进),CDN 失败回退 textarea ---------------- */
+let cm = null;
+const getCode = () => cm ? cm.getValue() : $('#code').value;
+const setCode = v => { if (cm) { cm.setValue(v); } else { $('#code').value = v; } };
+
+function initEditor() {
+    if (!window.CodeMirror) return;          // CDN 未加载 → 保持 textarea
+    cm = CodeMirror.fromTextArea($('#code'), {
+        mode: 'python',
+        theme: 'material-darker',
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        smartIndent: true,                    // 冒号后回车自动缩进
+        electricChars: true,
+        matchBrackets: true,
+        autoCloseBrackets: true,
+        extraKeys: {
+            'Cmd-Enter': () => run(),
+            'Ctrl-Enter': () => run(),
+            Tab: cmInstance => {              // 选区缩进,否则插 4 空格
+                if (cmInstance.somethingSelected()) cmInstance.indentSelection('add');
+                else cmInstance.replaceSelection('    ', 'end');
+            },
+            'Shift-Tab': cmInstance => cmInstance.indentSelection('subtract'),
+        },
+    });
+}
+
 $('#examples').addEventListener('change', e => {
-    if (EXAMPLES[e.target.value]) $('#code').value = EXAMPLES[e.target.value];
+    if (EXAMPLES[e.target.value]) setCode(EXAMPLES[e.target.value]);
 });
 $('#code').value = EXAMPLES.linreg;
 $('#examples').value = 'linreg';
+initEditor();
 
 /* ---------------- Pyodide ---------------- */
 async function boot() {
@@ -319,7 +363,7 @@ async function run() {
     $('#btnRun').disabled = true;
     setStatus('busy', '运行中…');
     plot.style.display = 'none'; plot.innerHTML = '';
-    const code = $('#code').value;
+    const code = getCode();
     const t0 = performance.now();
     try {
         // 按 import 自动加载包(numpy/matplotlib/sklearn/pandas…)
