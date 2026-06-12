@@ -287,6 +287,32 @@ def show():
 }
 boot();
 
+/* matplotlib 中文字体:首次用到 matplotlib 时,下载文泉驿微米黑(5MB,
+   开源)写入 Pyodide 虚拟文件系统并注册,消除 CJK 字形缺失警告/方框 */
+let cjkFontReady = false;
+async function ensureCJKFont() {
+    if (cjkFontReady || !pyodide.loadedPackages['matplotlib']) return;
+    setStatus('busy', '安装中文字体(5MB,仅首次)…');
+    try {
+        const resp = await fetch('https://cdn.jsdelivr.net/gh/anthonyfok/fonts-wqy-microhei/wqy-microhei.ttc');
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const buf = new Uint8Array(await resp.arrayBuffer());
+        pyodide.FS.writeFile('/wqy-microhei.ttc', buf);
+        pyodide.runPython(`
+import matplotlib
+import matplotlib.font_manager as fm
+fm.fontManager.addfont("/wqy-microhei.ttc")
+matplotlib.rcParams["font.family"] = ["WenQuanYi Micro Hei", "sans-serif"]
+matplotlib.rcParams["axes.unicode_minus"] = False
+`);
+        cjkFontReady = true;
+        print('已安装中文字体(文泉驿微米黑),图表可正常显示中文。', 'info');
+    } catch (e) {
+        print('中文字体安装失败(' + e.message + '),图表中文将显示为方框。', 'err');
+        cjkFontReady = true;   // 不重试,避免每次运行都拖慢
+    }
+}
+
 async function run() {
     if (!pyodide || running) return;
     running = true;
@@ -301,6 +327,7 @@ async function run() {
         await pyodide.loadPackagesFromImports(code, {
             messageCallback: m => { setStatus('busy', m.slice(0, 42)); },
         });
+        await ensureCJKFont();
         setStatus('busy', '运行中…');
         await pyodide.runPythonAsync(code);
         print(`✓ 完成(${((performance.now()-t0)/1000).toFixed(2)}s)`, 'info');
