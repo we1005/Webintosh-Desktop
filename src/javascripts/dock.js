@@ -3,7 +3,7 @@ import { create, bringToFront } from "./window.js";
 const tip = document.querySelector("body > div.tip");
 const defaultApps = [
     "访达", "启动台", "Safari浏览器", "信息", "邮件", "地图", "照片", "FaceTime通话",
-    "日历", "提醒事项", "备忘录", "音乐", "Spotify", "终端", "虚拟机", "泡泡堂", "系统设置",
+    "日历", "提醒事项", "备忘录", "音乐", "Spotify", "终端", "虚拟机", "系统设置",
     "hr", "下载_Folder", "废纸篓"
 ];
 let noAnimation = ["启动台", "访达"];
@@ -104,6 +104,8 @@ export function addToDock(app) {
 
     let container = document.createElement("div");
     container.classList.add("container");
+    // 非常驻：从启动台临时加入 Dock，应用关闭后会被移除
+    container.dataset.transient = "1";
 
     let img = document.createElement("img");
     img.src = `./assets/icons/${app}.svg`;
@@ -117,22 +119,27 @@ export function addToDock(app) {
     bindClickEvent(img, light, app);
     bindTipEvent(img);
 
+    // 插在分隔线之前（归入主应用组），不额外添加分隔线
     const hr = dock.querySelector(".container hr");
     if (hr) {
-        // hr is usually inside a container div, so we insert after that container
-        // omg, i didn't know that before
-        const hrContainer = hr.parentElement;
-        let hrNextContainer = document.createElement("div");
-        hrNextContainer.classList.add("container");
-        hrNextContainer.appendChild(document.createElement("hr"));
-        dock.insertBefore(container, hrContainer.nextSibling);
-        dock.insertBefore(hrNextContainer, container.nextSibling);
+        dock.insertBefore(container, hr.parentElement);
     } else {
         dock.appendChild(container);
     }
 
     // Update imgs list for animation
     imgs = dock.querySelectorAll(".container img");
+}
+
+// 移除非常驻应用的 Dock 图标（仅移除 addToDock 临时加入的，常驻应用不动）
+export function removeFromDock(app) {
+    const img = document.querySelector(`#dock img[alt="${app}"]`);
+    if (!img) return;
+    const container = img.closest(".container");
+    if (container && container.dataset.transient === "1") {
+        container.remove();
+        imgs = dock.querySelectorAll(".container img");
+    }
 }
 
 function init() {

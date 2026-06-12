@@ -13,7 +13,14 @@ function syncDockLight(name, on) {
   if (window.appStatus) window.appStatus[name] = on;
   if (name === "启动台") return;   // 启动台是覆盖层，macOS 不显示运行灯
   const img = document.querySelector(`#dock img[alt="${name}"]`);
-  const light = img && img.parentElement.querySelector(".light");
+  if (!img) return;
+  const container = img.closest(".container");
+  if (!on && container && container.dataset.transient === "1") {
+    // 非常驻应用（从启动台临时加入 Dock）关闭后从 Dock 移除
+    container.remove();
+    return;
+  }
+  const light = container && container.querySelector(".light");
   if (light) light.classList.toggle("on", on);
 }
 

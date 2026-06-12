@@ -1,0 +1,30 @@
+<svg width="50px" height="50px" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="pw-clip"><rect x="0" y="0" width="50" height="50" rx="11.2"/></clipPath>
+  </defs>
+  <g clip-path="url(#pw-clip)">
+    <rect x="0" y="0" width="50" height="50" fill="#161616"/>
+    <!-- 三把交叠的钥匙：黄、蓝、绿 -->
+    <g transform="translate(31 18) rotate(45)">
+      <circle cx="0" cy="0" r="6" fill="#34c759"/>
+      <circle cx="0" cy="0" r="2.6" fill="#161616"/>
+      <rect x="-1.9" y="5" width="3.8" height="15" rx="1.4" fill="#34c759"/>
+      <rect x="1.9" y="11" width="3.6" height="3.4" rx="1" fill="#34c759"/>
+      <rect x="1.9" y="16" width="3" height="3.2" rx="1" fill="#34c759"/>
+    </g>
+    <g transform="translate(25 16) rotate(45)">
+      <circle cx="0" cy="0" r="6" fill="#0a84ff"/>
+      <circle cx="0" cy="0" r="2.6" fill="#161616"/>
+      <rect x="-1.9" y="5" width="3.8" height="15" rx="1.4" fill="#0a84ff"/>
+      <rect x="1.9" y="11" width="3.6" height="3.4" rx="1" fill="#0a84ff"/>
+      <rect x="1.9" y="16" width="3" height="3.2" rx="1" fill="#0a84ff"/>
+    </g>
+    <g transform="translate(19 14) rotate(45)">
+      <circle cx="0" cy="0" r="6" fill="#ffd60a"/>
+      <circle cx="0" cy="0" r="2.6" fill="#161616"/>
+      <rect x="-1.9" y="5" width="3.8" height="15" rx="1.4" fill="#ffd60a"/>
+      <rect x="1.9" y="11" width="3.6" height="3.4" rx="1" fill="#ffd60a"/>
+      <rect x="1.9" y="16" width="3" height="3.2" rx="1" fill="#ffd60a"/>
+    </g>
+  </g>
+</svg>

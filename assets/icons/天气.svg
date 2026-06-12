@@ -1,0 +1,26 @@
+<svg width="50px" height="50px" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="wx-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3db1ff"/>
+      <stop offset="1" stop-color="#1a76e8"/>
+    </linearGradient>
+    <clipPath id="wx-clip"><rect x="0" y="0" width="50" height="50" rx="11.2"/></clipPath>
+  </defs>
+  <g clip-path="url(#wx-clip)">
+    <rect x="0" y="0" width="50" height="50" fill="url(#wx-bg)"/>
+    <g stroke="#ffd83a" stroke-width="2.4" stroke-linecap="round">
+      <line x1="17" y1="6" x2="17" y2="10.5"/>
+      <line x1="5.5" y1="17.5" x2="10" y2="17.5"/>
+      <line x1="24" y1="17.5" x2="28.5" y2="17.5"/>
+      <line x1="9" y1="9.5" x2="12" y2="12.5"/>
+      <line x1="25" y1="9.5" x2="22" y2="12.5"/>
+    </g>
+    <circle cx="17" cy="17.5" r="7" fill="#ffd83a"/>
+    <g fill="#ffffff">
+      <circle cx="21" cy="35" r="7"/>
+      <circle cx="31.5" cy="31" r="9.5"/>
+      <circle cx="41" cy="35.5" r="6.5"/>
+      <rect x="15" y="35" width="31" height="8" rx="4"/>
+    </g>
+  </g>
+</svg>
