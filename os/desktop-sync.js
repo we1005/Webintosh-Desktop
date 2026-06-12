@@ -81,12 +81,13 @@ export async function initDesktopFiles() {
             item.dataset.vfsPath = path;
 
             const icon = document.createElement("img");
-            const isText = /\.(txt|md)$/i.test(entry.name);
             icon.src = entry.kind === "dir"
                 ? "./assets/images/Folder.png"
-                : isText
-                    ? "./assets/icons/文本文件.svg"     // 文本文件专用图标
-                    : "./assets/images/GenericDocumentIcon.png";
+                : /\.md$/i.test(entry.name)
+                    ? "./assets/icons/markdown文件.svg" // Markdown 文件专用图标
+                    : /\.txt$/i.test(entry.name)
+                        ? "./assets/icons/文本文件.svg" // 文本文件专用图标
+                        : "./assets/images/GenericDocumentIcon.png";
             icon.draggable = false;
 
             const label = document.createElement("p");

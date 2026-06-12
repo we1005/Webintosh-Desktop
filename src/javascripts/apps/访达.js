@@ -211,7 +211,11 @@ import { bringToFront } from "../window.js";
             const icon = document.createElement("img");
             icon.src = entry.kind === "dir"
                 ? "./assets/images/Folder.png"
-                : "./assets/images/GenericDocumentIcon.png";
+                : /\.md$/i.test(entry.name)
+                    ? "./assets/icons/markdown文件.svg"  // Markdown 文件专用图标
+                    : /\.txt$/i.test(entry.name)
+                        ? "./assets/icons/文本文件.svg"
+                        : "./assets/images/GenericDocumentIcon.png";
             icon.draggable = false;
 
             const label = document.createElement("span");
