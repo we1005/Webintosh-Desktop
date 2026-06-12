@@ -32,6 +32,17 @@ const WELCOME_TEXT = `欢迎来到 Webintosh OS！
   echo "hello webintosh" > /Documents/hello.txt
   cat /Documents/hello.txt
 `;
+// 桌面欢迎文件：双击即用「文本编辑」打开
+const DESKTOP_WELCOME_FILE = '/Desktop/欢迎.txt';
+const DESKTOP_WELCOME_TEXT = `欢迎来到 Webintosh！🎉
+
+一些好玩的入口：
+- Dock：终端（试试 neofetch）、虚拟机（真实启动 FreeDOS）、音乐 / Spotify
+- 启动台：Python 实验室、AI 工具箱、JupyterLite、复古游戏厅、泡泡堂
+- 本文件就在桌面（/Desktop），编辑保存后内容会持久保留
+
+把这个文件改成你自己的备忘录吧 :)
+`;
 
 export function normPath(p) {
     if (!p) return '/';
@@ -239,6 +250,9 @@ class VFS extends EventTarget {
             }
             if (!(await this.backend.exists(WELCOME_FILE))) {
                 await this.backend.writeBytes(WELCOME_FILE, new TextEncoder().encode(WELCOME_TEXT));
+            }
+            if (!(await this.backend.exists(DESKTOP_WELCOME_FILE))) {
+                await this.backend.writeBytes(DESKTOP_WELCOME_FILE, new TextEncoder().encode(DESKTOP_WELCOME_TEXT));
             }
         } catch (e) {
             console.warn('[VFS] 初始化默认目录失败:', e.message);

@@ -70,9 +70,12 @@ export async function initDesktopFiles() {
             item.dataset.vfsPath = path;
 
             const icon = document.createElement("img");
+            const isText = /\.(txt|md)$/i.test(entry.name);
             icon.src = entry.kind === "dir"
                 ? "./assets/images/Folder.png"
-                : "./assets/images/GenericDocumentIcon.png";
+                : isText
+                    ? "./assets/icons/文本文件.svg"     // 文本文件专用图标
+                    : "./assets/images/GenericDocumentIcon.png";
             icon.draggable = false;
 
             const label = document.createElement("p");
