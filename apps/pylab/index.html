@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Python 实验室</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+    display: flex; flex-direction: column;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    background: #1e1e22; color: #e8e8ea;
+}
+/* 工具条 */
+.bar {
+    flex: none; height: 42px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 12px;
+    background: linear-gradient(180deg, #2c2c30, #242428);
+    border-bottom: 1px solid rgba(0,0,0,.5);
+}
+.bar button, .bar select {
+    height: 28px; padding: 0 12px;
+    border: 1px solid rgba(255,255,255,.14); border-radius: 6px;
+    background: #3a3a3f; color: #fff; font-size: 12.5px;
+    font-family: inherit; cursor: pointer;
+}
+.bar button:hover { background: #47474d; }
+.bar button:disabled { opacity: .4; cursor: default; }
+.bar button.run { background: #2e7d46; border-color: #3a9a57; font-weight: 600; }
+.bar button.run:hover:not(:disabled) { background: #379453; }
+.status { margin-left: auto; display: flex; align-items: center; gap: 7px; font-size: 12px; color: #9a9aa0; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #febc2e; }
+.dot.ready { background: #30d158; }
+.dot.busy { background: #febc2e; animation: pulse 1s infinite; }
+.dot.error { background: #ff453a; }
+@keyframes pulse { 50% { opacity: .35; } }
+/* 主区:左编辑右输出 */
+.main { flex: 1; min-height: 0; display: flex; }
+.editor-wrap { flex: 1.1; min-width: 0; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,.08); }
+.pane-title { flex: none; padding: 6px 12px; font-size: 11px; letter-spacing: 1px; color: #8a8a90; background: #232327; }
+textarea#code {
+    flex: 1; width: 100%; resize: none; border: none; outline: none;
+    background: #1b1b1f; color: #e8e8ea;
+    font: 13px/1.55 "SF Mono", Menlo, Consolas, monospace;
+    padding: 12px 14px; tab-size: 4; white-space: pre;
+}
+.out-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+#stdout {
+    flex: 1; min-height: 0; overflow: auto;
+    padding: 12px 14px;
+    font: 12.5px/1.5 "SF Mono", Menlo, Consolas, monospace;
+    white-space: pre-wrap; word-break: break-word;
+    background: #18181c;
+}
+#stdout .err { color: #ff6b66; }
+#stdout .info { color: #8a8a90; }
+#plot { flex: none; max-height: 55%; overflow: auto; background: #18181c; border-top: 1px solid rgba(255,255,255,.08); display: none; padding: 10px; text-align: center; }
+#plot img { max-width: 100%; border-radius: 6px; background: #fff; }
+/* 进度遮罩 */
+#boot {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    background: #1e1e22;
+}
+#boot .logo { font-size: 44px; }
+#boot .msg { font-size: 13px; color: #9a9aa0; }
+#boot .bar2 { width: 260px; height: 5px; border-radius: 3px; background: #333; overflow: hidden; }
+#boot .fill { width: 30%; height: 100%; border-radius: 3px; background: linear-gradient(90deg,#3776ab,#ffd43b); animation: slide 1.2s ease-in-out infinite; }
+@keyframes slide { 0%{transform:translateX(-100%)} 100%{transform:translateX(360px)} }
+</style>
+</head>
+<body>
+<div id="boot">
+    <div class="logo">🐍</div>
+    <div class="msg" id="bootMsg">正在加载 Python 运行时（Pyodide ≈10MB，首次较慢）…</div>
+    <div class="bar2"><div class="fill"></div></div>
+</div>
+
+<div class="bar">
+    <button class="run" id="btnRun" disabled>▶ 运行 (⌘↵)</button>
+    <select id="examples">
+        <option value="">― 机器学习示例 ―</option>
+        <option value="hello">入门：NumPy 矩阵运算</option>
+        <option value="linreg">线性回归（最小二乘拟合 + 可视化）</option>
+        <option value="kmeans">KMeans 聚类（sklearn + 散点图）</option>
+        <option value="boundary">分类决策边界（逻辑回归 vs SVM）</option>
+        <option value="pandas">pandas 数据分析（分组统计 + 柱状图）</option>
+        <option value="gd">梯度下降过程可视化</option>
+    </select>
+    <button id="btnClear">清空输出</button>
+    <span class="status"><span class="dot" id="dot"></span><span id="statusText">加载中</span></span>
+</div>
+
+<div class="main">
+    <div class="editor-wrap">
+        <div class="pane-title">代码（Python 3.12 · 自动安装 import 的包）</div>
+        <textarea id="code" spellcheck="false"></textarea>
+    </div>
+    <div class="out-wrap">
+        <div class="pane-title">输出</div>
+        <div id="stdout"><span class="info">就绪后点击「运行」。matplotlib 图会显示在下方。</span></div>
+        <div id="plot"></div>
+    </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const stdout = $('#stdout'), plot = $('#plot');
+const dot = $('#dot'), statusText = $('#statusText');
+let pyodide = null, running = false;
+
+function setStatus(kind, text) { dot.className = 'dot ' + kind; statusText.textContent = text; }
+function print(text, cls) {
+    const s = document.createElement('span');
+    if (cls) s.className = cls;
+    s.textContent = text + '\n';
+    stdout.appendChild(s);
+    stdout.scrollTop = stdout.scrollHeight;
+}
+
+/* ---------------- 示例代码 ---------------- */
+const EXAMPLES = {
+hello: `import numpy as np
+
+A = np.array([[1, 2], [3, 4]])
+B = np.array([[5, 6], [7, 8]])
+
+print("A @ B =\\n", A @ B)
+print("A 的特征值:", np.linalg.eigvals(A))
+print("逆矩阵 A^-1 =\\n", np.linalg.inv(A))`,
+
+linreg: `# 线性回归:最小二乘拟合 y = wx + b
+import numpy as np
+import matplotlib
+matplotlib.use("AGG")
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(42)
+x = np.linspace(0, 10, 60)
+y = 2.5 * x + 4 + rng.normal(0, 2.5, x.size)   # 真实 w=2.5, b=4 + 噪声
+
+# 闭式解 (X^T X)^-1 X^T y
+X = np.c_[x, np.ones_like(x)]
+w, b = np.linalg.lstsq(X, y, rcond=None)[0]
+print(f"拟合结果: w={w:.3f}  b={b:.3f}  (真实 w=2.5, b=4)")
+
+plt.figure(figsize=(7,4.2))
+plt.scatter(x, y, s=22, alpha=.7, label="带噪声样本")
+plt.plot(x, w*x+b, "r", lw=2, label=f"拟合线 y={w:.2f}x+{b:.2f}")
+plt.legend(); plt.title("Linear Regression (least squares)")
+plt.tight_layout()
+show()`,
+
+kmeans: `# KMeans 聚类(scikit-learn,首次会下载 ~25MB)
+import numpy as np
+import matplotlib
+matplotlib.use("AGG")
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.datasets import make_blobs
+
+X, _ = make_blobs(n_samples=400, centers=4, cluster_std=1.1, random_state=7)
+km = KMeans(n_clusters=4, n_init="auto", random_state=0).fit(X)
+print("各簇样本数:", np.bincount(km.labels_))
+print("中心点:\\n", np.round(km.cluster_centers_, 2))
+
+plt.figure(figsize=(6.6,5))
+plt.scatter(X[:,0], X[:,1], c=km.labels_, cmap="tab10", s=18, alpha=.8)
+plt.scatter(*km.cluster_centers_.T, c="black", marker="x", s=120, lw=3, label="centers")
+plt.legend(); plt.title("KMeans Clustering")
+plt.tight_layout()
+show()`,
+
+boundary: `# 决策边界:逻辑回归 vs 线性 SVM
+import numpy as np
+import matplotlib
+matplotlib.use("AGG")
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_moons
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+
+X, y = make_moons(n_samples=300, noise=0.25, random_state=3)
+models = {"LogisticRegression": LogisticRegression(),
+          "SVM (RBF核)": SVC(kernel="rbf", gamma=1.2)}
+
+xx, yy = np.meshgrid(np.linspace(X[:,0].min()-.5, X[:,0].max()+.5, 220),
+                     np.linspace(X[:,1].min()-.5, X[:,1].max()+.5, 220))
+fig, axes = plt.subplots(1, 2, figsize=(9.6,4.2))
+for ax, (name, m) in zip(axes, models.items()):
+    m.fit(X, y)
+    Z = m.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+    ax.contourf(xx, yy, Z, alpha=.25, cmap="coolwarm")
+    ax.scatter(X[:,0], X[:,1], c=y, cmap="coolwarm", s=14, edgecolors="k", lw=.3)
+    ax.set_title(f"{name}  acc={m.score(X,y):.2f}")
+plt.tight_layout()
+show()`,
+
+pandas: `# pandas:分组统计 + 柱状图
+import pandas as pd
+import numpy as np
+import matplotlib
+matplotlib.use("AGG")
+import matplotlib.pyplot as plt
+
+rng = np.random.default_rng(1)
+df = pd.DataFrame({
+    "城市": rng.choice(["北京","上海","深圳","杭州"], 200),
+    "薪资": rng.normal(20, 6, 200).round(1),
+    "经验": rng.integers(1, 11, 200),
+})
+g = df.groupby("城市")["薪资"].agg(["mean","median","count"]).round(2)
+print(g)
+
+g["mean"].plot(kind="bar", figsize=(6.4,4), color="#3776ab", title="平均薪资 by 城市")
+plt.ylabel("k¥/月"); plt.tight_layout()
+show()`,
+
+gd: `# 梯度下降:在碗状函数上一步步走向最小值
+import numpy as np
+import matplotlib
+matplotlib.use("AGG")
+import matplotlib.pyplot as plt
+
+f  = lambda x, y: x**2 + 3*y**2
+gx = lambda x, y: 2*x
+gy = lambda x, y: 6*y
+
+lr, steps = 0.12, 24
+px, py = 4.2, 2.6
+path = [(px, py)]
+for i in range(steps):
+    px, py = px - lr*gx(px,py), py - lr*gy(px,py)
+    path.append((px, py))
+print(f"终点 ≈ ({px:.4f}, {py:.4f}),f = {f(px,py):.6f}")
+
+xs, ys = np.meshgrid(np.linspace(-5,5,200), np.linspace(-4,4,200))
+plt.figure(figsize=(6.8,4.6))
+plt.contour(xs, ys, f(xs,ys), levels=24, cmap="viridis", alpha=.7)
+p = np.array(path)
+plt.plot(p[:,0], p[:,1], "ro-", ms=4, lw=1.4, label=f"lr={lr}")
+plt.legend(); plt.title("Gradient Descent on x² + 3y²")
+plt.tight_layout()
+show()`,
+};
+
+$('#examples').addEventListener('change', e => {
+    if (EXAMPLES[e.target.value]) $('#code').value = EXAMPLES[e.target.value];
+});
+$('#code').value = EXAMPLES.linreg;
+$('#examples').value = 'linreg';
+
+/* ---------------- Pyodide ---------------- */
+async function boot() {
+    try {
+        const mod = await import('https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.mjs');
+        $('#bootMsg').textContent = '正在初始化解释器…';
+        pyodide = await mod.loadPyodide({
+            stdout: t => print(t),
+            stderr: t => print(t, 'err'),
+        });
+        // show():把 matplotlib 当前图导出为 base64 交给 JS 显示
+        pyodide.runPython(`
+import io, base64, js
+
+def show():
+    import matplotlib.pyplot as plt
+    buf = io.BytesIO()
+    plt.gcf().savefig(buf, format="png", dpi=110)
+    plt.close("all")
+    js.showPlot(base64.b64encode(buf.getvalue()).decode())
+`);
+        window.showPlot = b64 => {
+            plot.style.display = 'block';
+            plot.innerHTML = '<img src="data:image/png;base64,' + b64 + '">';
+        };
+        $('#boot').remove();
+        $('#btnRun').disabled = false;
+        setStatus('ready', 'Python 3.12 就绪');
+        print('Pyodide ' + pyodide.version + ' 已就绪。import 的包会自动从 CDN 安装(numpy/pandas/sklearn 等)。', 'info');
+    } catch (e) {
+        $('#bootMsg').textContent = '加载失败:' + e.message + '(需要联网访问 cdn.jsdelivr.net)';
+        setStatus('error', '加载失败');
+    }
+}
+boot();
+
+async function run() {
+    if (!pyodide || running) return;
+    running = true;
+    $('#btnRun').disabled = true;
+    setStatus('busy', '运行中…');
+    plot.style.display = 'none'; plot.innerHTML = '';
+    const code = $('#code').value;
+    const t0 = performance.now();
+    try {
+        // 按 import 自动加载包(numpy/matplotlib/sklearn/pandas…)
+        setStatus('busy', '解析依赖…');
+        await pyodide.loadPackagesFromImports(code, {
+            messageCallback: m => { setStatus('busy', m.slice(0, 42)); },
+        });
+        setStatus('busy', '运行中…');
+        await pyodide.runPythonAsync(code);
+        print(`✓ 完成(${((performance.now()-t0)/1000).toFixed(2)}s)`, 'info');
+    } catch (e) {
+        print(String(e), 'err');
+    }
+    running = false;
+    $('#btnRun').disabled = false;
+    setStatus('ready', 'Python 3.12 就绪');
+}
+$('#btnRun').addEventListener('click', run);
+document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); run(); }
+});
+$('#btnClear').addEventListener('click', () => { stdout.innerHTML = ''; plot.style.display = 'none'; plot.innerHTML = ''; });
+// Tab 缩进
+$('#code').addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const t = e.target, s = t.selectionStart;
+        t.value = t.value.slice(0, s) + '    ' + t.value.slice(t.selectionEnd);
+        t.selectionStart = t.selectionEnd = s + 4;
+    }
+});
+</script>
+</body>
+</html>

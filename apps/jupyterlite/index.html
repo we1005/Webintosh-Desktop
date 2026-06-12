@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JupyterLite</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body { display: flex; flex-direction: column; background: #f5f5f7; font-family: -apple-system, "PingFang SC", sans-serif; }
+.note {
+    flex: none; display: flex; align-items: center; gap: 10px;
+    padding: 7px 14px; font-size: 12px; color: #6e6e73;
+    background: linear-gradient(180deg, #fff, #f3f3f5);
+    border-bottom: 1px solid rgba(0,0,0,.1);
+}
+.note b { color: #e46e2e; }
+.note a { color: #0a84ff; text-decoration: none; }
+iframe { flex: 1; width: 100%; border: none; background: #fff; }
+#loading {
+    position: absolute; inset: 36px 0 0 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    background: #fff; color: #888; font-size: 13px;
+}
+#loading .sp { width: 26px; height: 26px; border: 3px solid #eee; border-top-color: #e46e2e; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="note">
+    <b>JupyterLite</b> 零后端 Jupyter Notebook(Pyodide 内核,代码全部在你的浏览器里运行)·
+    内容存储在浏览器本地 · 需联网加载 ·
+    <a href="https://jupyterlite.github.io/demo/lab/index.html" target="_blank">新窗口打开 ↗</a>
+</div>
+<div id="loading"><div class="sp"></div>正在加载 JupyterLab(首次约 20–60s)…</div>
+<iframe id="jl" src="https://jupyterlite.github.io/demo/lab/index.html"
+        onload="document.getElementById('loading').style.display='none'"></iframe>
+</body>
+</html>

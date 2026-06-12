@@ -1,0 +1,14 @@
+<svg width="50px" height="50px" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="jl-clip"><rect x="4.5" y="4.5" width="41" height="41" rx="9.2"/></clipPath>
+  </defs>
+  <g clip-path="url(#jl-clip)">
+    <rect x="4.5" y="4.5" width="41" height="41" fill="#f7f7f8"/>
+    <!-- Jupyter 上下双弧 + 圆点 -->
+    <path d="M14 21.5 a13.5 8.5 0 0 1 22 0 a13 11.5 0 0 0 -22 0z" fill="#f37726"/>
+    <path d="M14 28.5 a13.5 8.5 0 0 0 22 0 a13 11.5 0 0 1 -22 0z" fill="#f37726"/>
+    <circle cx="36.8" cy="13.3" r="2" fill="#989798"/>
+    <circle cx="12.4" cy="35.8" r="2.4" fill="#616262"/>
+    <circle cx="14.2" cy="13.8" r="1.5" fill="#616262"/>
+  </g>
+</svg>
