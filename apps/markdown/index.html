@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Markdown</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vditor@3.11.2/dist/index.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+    display: flex; flex-direction: column;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    background: #fff;
+}
+/* 顶部文件条(macOS 风) */
+.filebar {
+    flex: none; height: 40px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px;
+    background: linear-gradient(180deg, #fafafa, #f1f1f3);
+    border-bottom: 1px solid rgba(0,0,0,.1);
+}
+.filebar button, .filebar select {
+    height: 27px; padding: 0 11px;
+    border: 1px solid rgba(0,0,0,.14); border-radius: 6px;
+    background: #fff; color: #1d1d1f; font-size: 12.5px;
+    font-family: inherit; cursor: pointer;
+}
+.filebar button:hover { background: #f5f5f7; }
+.filebar button.primary { background: #0a84ff; border-color: #0a84ff; color: #fff; font-weight: 600; }
+.filebar button.primary:hover { background: #2294ff; }
+.fname {
+    margin-left: auto; font-size: 12.5px; color: #6e6e73;
+    max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fname b { color: #1d1d1f; font-weight: 600; }
+#editor { flex: 1; min-height: 0; }
+/* Vditor 填满 */
+#editor .vditor { height: 100% !important; border: none; border-radius: 0; }
+#loading {
+    position: fixed; inset: 40px 0 0 0; z-index: 9;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    background: #fff; color: #888; font-size: 13px;
+}
+#loading .sp { width: 22px; height: 22px; border: 3px solid #eee; border-top-color: #0a84ff; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="filebar">
+    <button id="btnNew">新建</button>
+    <select id="selOpen"><option value="">打开…</option></select>
+    <button class="primary" id="btnSave">保存 (⌘S)</button>
+    <button id="btnExport">导出 .md</button>
+    <select id="selMode">
+        <option value="ir">即时渲染(Typora 风)</option>
+        <option value="wysiwyg">所见即所得</option>
+        <option value="sv">分屏预览</option>
+    </select>
+    <span class="fname" id="fname">未命名文档</span>
+</div>
+<div id="loading"><div class="sp"></div>正在加载编辑器…</div>
+<div id="editor"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/vditor@3.11.2/dist/index.min.js"></script>
+<script type="module">
+import vfs, { basename } from '../../os/vfs.js';
+
+const $ = s => document.querySelector(s);
+let vditor = null;
+let curPath = null;        // 当前 VFS 路径(null = 未命名)
+let dirty = false;
+let suppressDirty = false; // setValue 时不算脏
+let lastSaved = null;      // 最后保存/载入的内容,脏标记以内容比较为准
+
+const DEFAULT_DOC = `# 欢迎使用 Markdown 编辑器 ✍️
+
+这是 **Typora 风格的即时渲染**:输入 Markdown 符号,排版立即生效。
+
+## 试试这些
+
+- 输入 \`**粗体**\`、\`*斜体*\`、\`~~删除线~~\`
+- 输入 \`# \` 开头变标题,\`> \` 开头变引用
+- 表格、任务列表、数学公式 $E=mc^2$ 都支持
+
+\`\`\`js
+console.log("代码块自动高亮");
+\`\`\`
+
+> 文件保存在 Webintosh 文件系统(/Documents),访达里能看到、终端里能 cat。
+> 在访达双击任何 .md 文件,都会用本编辑器打开。
+`;
+
+function setFname() {
+    $('#fname').innerHTML = (curPath ? `<b>${basename(curPath)}</b>` : '<b>未命名文档</b>') + (dirty ? ' — 已编辑' : '');
+}
+function markDirty() {
+    if (suppressDirty || !vditor) return;
+    // Vditor 的 input 回调有防抖延迟,可能在保存之后才触发;
+    // 以内容比较为准,迟到事件若内容与已保存一致则不置脏
+    const d = vditor.getValue() !== lastSaved;
+    if (d !== dirty) { dirty = d; setFname(); }
+}
+
+/* ---------- 文件操作 ---------- */
+async function refreshOpenList() {
+    const sel = $('#selOpen');
+    sel.innerHTML = '<option value="">打开…</option>';
+    try {
+        const entries = (await vfs.list('/Documents')).filter(e => e.kind === 'file' && /\.md$/i.test(e.name));
+        for (const e of entries) {
+            const o = document.createElement('option');
+            o.value = '/Documents/' + e.name;
+            o.textContent = e.name;
+            sel.appendChild(o);
+        }
+    } catch (e) { /* VFS 未就绪时忽略 */ }
+}
+
+async function loadFile(path) {
+    if (dirty && !confirm('当前文档有未保存的修改,放弃并打开新文件?')) return;
+    try {
+        const text = await vfs.readText(path);
+        suppressDirty = true;
+        vditor.setValue(text);
+        suppressDirty = false;
+        lastSaved = text;
+        curPath = path; dirty = false; setFname();
+    } catch (e) { alert('打开失败: ' + e.message); }
+}
+
+async function save() {
+    if (!vditor) return;
+    if (!curPath) {
+        let name = prompt('保存为(存放在 /Documents):', '未命名.md');
+        if (!name) return;
+        if (!/\.md$/i.test(name)) name += '.md';
+        curPath = '/Documents/' + name.trim();
+    }
+    try {
+        lastSaved = vditor.getValue();
+        await vfs.writeText(curPath, lastSaved);
+        dirty = false; setFname();
+        refreshOpenList();
+    } catch (e) { alert('保存失败: ' + e.message); }
+}
+
+function newDoc() {
+    if (dirty && !confirm('当前文档有未保存的修改,放弃并新建?')) return;
+    suppressDirty = true;
+    vditor.setValue('# 新文档\n\n');
+    suppressDirty = false;
+    lastSaved = vditor.getValue();
+    curPath = null; dirty = false; setFname();
+}
+
+function exportMd() {
+    const blob = new Blob([vditor.getValue()], { type: 'text/markdown;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = curPath ? basename(curPath) : '未命名.md';
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+/* ---------- 初始化 Vditor ---------- */
+function initVditor(mode) {
+    const old = vditor ? vditor.getValue() : null;
+    if (vditor) { vditor.destroy(); vditor = null; }
+    vditor = new Vditor('editor', {
+        mode,
+        lang: 'zh_CN',
+        height: '100%',
+        cache: { enable: false },
+        outline: { enable: false },
+        counter: { enable: true },
+        preview: { math: { engine: 'KaTeX' } },
+        toolbarConfig: { pin: true },
+        input: markDirty,
+        after() {
+            $('#loading').style.display = 'none';
+            suppressDirty = true;
+            vditor.setValue(old !== null ? old : DEFAULT_DOC);
+            suppressDirty = false;
+            if (lastSaved === null) lastSaved = vditor.getValue();
+            setFname();
+            openInitialFile();
+        },
+    });
+}
+
+/* 与访达/桌面的打开契约:父窗口 __openFile(.md)或 markdown-open 事件 */
+let initialHandled = false;
+async function openInitialFile() {
+    if (initialHandled) return;
+    initialHandled = true;
+    try {
+        const p = window.parent;
+        if (p && p !== window && p.__openFile && /\.md$/i.test(p.__openFile)) {
+            const f = p.__openFile;
+            p.__openFile = null;
+            dirty = false;             // 初始内容非用户输入
+            await loadFile(f);
+        }
+    } catch (e) { /* 非嵌入场景忽略 */ }
+}
+try {
+    if (window.parent && window.parent !== window) {
+        window.parent.document.addEventListener('markdown-open', e => {
+            if (typeof e.detail === 'string') loadFile(e.detail);
+        });
+    }
+} catch (e) { /* 跨域或独立打开时忽略 */ }
+
+/* ---------- 事件 ---------- */
+$('#btnNew').addEventListener('click', newDoc);
+$('#btnSave').addEventListener('click', save);
+$('#btnExport').addEventListener('click', exportMd);
+$('#selOpen').addEventListener('change', e => {
+    if (e.target.value) loadFile(e.target.value);
+    e.target.value = '';
+});
+$('#selOpen').addEventListener('mousedown', refreshOpenList);
+$('#selMode').addEventListener('change', e => initVditor(e.target.value));
+document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); save(); }
+});
+vfs.addEventListener('change', refreshOpenList);
+
+initVditor('ir');
+refreshOpenList();
+</script>
+</body>
+</html>

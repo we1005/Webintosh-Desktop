@@ -122,8 +122,19 @@ import { bringToFront } from "../window.js";
             window.moduleItems.create("./assets/apps/文本编辑.html", "文本编辑");
         }
     }
+    // .md 用 Markdown 编辑器(Typora 风即时渲染)打开
+    function openInMarkdown(path) {
+        if (document.getElementById("Markdown")) {
+            document.dispatchEvent(new CustomEvent("markdown-open", { detail: path }));
+            window.moduleItems.create("./assets/apps/Markdown.html", "Markdown");
+        } else {
+            window.__openFile = path;
+            window.moduleItems.create("./assets/apps/Markdown.html", "Markdown");
+        }
+    }
     function openEntry(entry, path) {
         if (entry.kind === "dir") navigate(path);
+        else if (/\.md$/i.test(entry.name)) openInMarkdown(path);
         else if (isTextFile(entry.name)) openInTextEdit(path);
     }
 

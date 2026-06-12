@@ -24,6 +24,17 @@ function openFinderAt(path) {
 }
 
 function openTextEdit(path) {
+    // .md 路由到 Markdown 编辑器(Typora 风即时渲染),其余文本走文本编辑
+    if (/\.md$/i.test(path)) {
+        if (document.getElementById("Markdown")) {
+            document.dispatchEvent(new CustomEvent("markdown-open", { detail: path }));
+            if (window.moduleItems) window.moduleItems.create("./assets/apps/Markdown.html", "Markdown");
+        } else {
+            window.__openFile = path;
+            if (window.moduleItems) window.moduleItems.create("./assets/apps/Markdown.html", "Markdown");
+        }
+        return;
+    }
     if (document.getElementById("文本编辑")) {
         document.dispatchEvent(new CustomEvent("textedit-open", { detail: path }));
         if (window.moduleItems) window.moduleItems.create("./assets/apps/文本编辑.html", "文本编辑");
