@@ -156,6 +156,8 @@ http://localhost:8787/?backend=remote
 ## 🙏 致谢
 
 - **Apple Inc.** - 为我们提供优秀的 macOS 设计灵感
+- **[macOSicons](https://macosicons.com/)** - 部分应用图标（密码、iPhone 镜像、博客、无边记等）来自该社区图标库
+- **[v86](https://github.com/copy/v86)** - 「虚拟机」应用的 x86 模拟器
 - **所有贡献者** - 感谢每一位为项目做出贡献的人
 - **开源社区** - 感谢提供的各种工具和库
 
