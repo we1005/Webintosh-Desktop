@@ -4,3 +4,4 @@ Logo.sketch
 
 # 图标源文件（已转换为 assets/icons 下的 SVG）
 *.icns
+/rss.png
