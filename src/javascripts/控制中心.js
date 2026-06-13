@@ -8,8 +8,6 @@
    音量写入 window.__systemVolume (0..1)。
    ======================================================================== */
 
-import { applyLiquidGlass } from "./liquid-glass.js";
-
 const CSS_HREF = "./assets/stylesheets/控制中心/index.css";
 const HTML_SRC = "./assets/apps/控制中心.html";
 
@@ -59,8 +57,9 @@ async function ensurePanel() {
         document.body.appendChild(node);
         panelEl = node;
         wirePanel(panelEl);
-        // 液态玻璃质感(Chromium 折射;Safari/Firefox 自动降级为模糊)
-        try { applyLiquidGlass(panelEl, { borderRadius: 18, saturation: 1.8 }); } catch (e) { }
+        // 材质完全由 控制中心/index.css 的 backdrop-filter: blur()+saturate() 提供,
+        // 干净磨砂玻璃、无任何色散折射边(与真实 macOS 控制中心一致)。
+        // 故此处不再对 #cc-panel 应用 liquid-glass(避免彩虹边与双层材质冲突)。
     } finally {
         injecting = false;
     }
