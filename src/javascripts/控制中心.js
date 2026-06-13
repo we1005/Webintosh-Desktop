@@ -87,15 +87,11 @@ function readCCStyle() {
 }
 
 // 克制的液态玻璃参数:色散收敛(几乎无彩虹边),折射强度适中,保留磨砂感。
+// 与桌面玻璃卡片(.dw-card)完全相同的参数:其余走 liquid-glass 默认
+// (scale -180 / aberration [0,8,16] / blur 11 / tint rgba(255,255,255,0.10))
 const CC_LIQUID_OPTS = {
-    // 对齐桌面卡片的强折射观感(liquid-glass 默认):明显光线扭曲 / 折射 / 放大镜 + 彩虹边
-    scale: -180,           // 折射强度(负=向内折射,放大镜感)
-    aberration: [0, 8, 16],// 逐通道色散,产生彩虹边
-    blur: 11,
-    displaceBlur: 0,
+    borderRadius: 18,
     saturation: 1.7,
-    // borderRadius 不写死,由模块按各按钮自身尺寸推导(每个圆角按钮各自成一块玻璃)
-    tint: "rgba(28,28,32,0.26)", // 偏深玻璃色,保证白字在每块透镜上可读,同时透出折射
 };
 
 // 液态玻璃只作用在这些圆角"按钮/卡片"上(不是整块面板);空隙保持透明形成反差
