@@ -28,7 +28,7 @@ function ensureCss() {
     if (document.querySelector('link[data-cc-style="1"]')) return;
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = CSS_HREF;
+    link.href = CSS_HREF + "?v=" + Date.now();   // 防浏览器缓存旧 CSS
     link.setAttribute("data-cc-style", "1");
     document.head.appendChild(link);
 }

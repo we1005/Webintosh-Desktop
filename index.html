@@ -89,8 +89,9 @@
 
     <script type="module" src="./src/javascripts/main.js"></script>
     <script type="module" src="./src/javascripts/finderbar.js"></script>
-    <script type="module" src="./src/javascripts/控制中心.js"></script>
-    <script type="module" src="./src/javascripts/wallpaper.js"></script>
+    <!-- 控制中心/壁纸:用带时间戳的动态 import 防浏览器缓存旧版(这两个常迭代) -->
+    <script type="module">import("./src/javascripts/控制中心.js?v=" + Date.now());</script>
+    <script type="module">import("./src/javascripts/wallpaper.js?v=" + Date.now());</script>
     <script type="module" src="./src/javascripts/dock.js"></script>
     <script type="module" src="./src/javascripts/desktop.js"></script>
     <script type="module">
