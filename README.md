@@ -166,6 +166,9 @@ http://localhost:8787/?backend=remote
 - **Apple Inc.** - 为我们提供优秀的 macOS 设计灵感
 - **[macOSicons](https://macosicons.com/)** - 部分应用图标（密码、iPhone 镜像、博客、无边记等）来自该社区图标库
 - **[v86](https://github.com/copy/v86)** - 「虚拟机」应用的 x86 模拟器
+- **[gianlucajahn/macOS-react](https://github.com/gianlucajahn/macOS-react)** (MIT) - 「壁纸」应用移植自其 WallpaperMenu，含动态壁纸预览图（Ventura / Monterey / Big Sur / Catalina / Mojave 等，壁纸图片版权归 Apple Inc.）
+- **[Thanas-R/thanas-os](https://github.com/Thanas-R/thanas-os)** (MIT) - 「音乐播放器」「计算器」「VS Code」等应用的界面与逻辑参考/移植自该项目（个人作品集相关数据已替换为中性内容，未使用其作者个人信息）
+- **[Leaflet](https://leafletjs.com/)** + **[OpenStreetMap](https://www.openstreetmap.org/)** - 「地图」应用的地图引擎与瓦片
 - **所有贡献者** - 感谢每一位为项目做出贡献的人
 - **开源社区** - 感谢提供的各种工具和库
 
