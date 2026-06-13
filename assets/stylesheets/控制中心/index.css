@@ -68,9 +68,14 @@
    故在 liquid 模式下把面板自有背景降到很低的不透明度,
    并让 backdrop-filter 交给 liquid-glass.js 注入的 SVG 折射滤镜
    (它会写 inline backdrop-filter,优先于此处规则)。 */
+/* 液态玻璃模式:面板本身完全透明(按钮空隙保持普通透明,形成反差);
+   液态玻璃效果由 JS 单独应用到每个圆角按钮/卡片(.cc-card/.cc-focus/.cc-tile/.cc-airplay)。 */
 #cc-panel[data-cc-style="liquid"] {
-    background: rgba(28, 28, 32, 0.18);
-    border-color: rgba(255, 255, 255, 0.14);
+    background: transparent;
+    border-color: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
 }
 
 /* 磨砂模式显式声明,保证从 liquid 切回时恢复默认材质 */

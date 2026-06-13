@@ -94,18 +94,24 @@ const CC_LIQUID_OPTS = {
     blur: 11,
     displaceBlur: 0,
     saturation: 1.7,
-    borderRadius: 24,      // 贴合控制中心面板圆角
-    tint: "rgba(28,28,32,0.18)", // 偏深玻璃色但足够通透,让折射透出
+    // borderRadius 不写死,由模块按各按钮自身尺寸推导(每个圆角按钮各自成一块玻璃)
+    tint: "rgba(28,28,32,0.26)", // 偏深玻璃色,保证白字在每块透镜上可读,同时透出折射
 };
+
+// 液态玻璃只作用在这些圆角"按钮/卡片"上(不是整块面板);空隙保持透明形成反差
+const LIQUID_SURFACE_SEL = ".cc-card, .cc-focus, .cc-tile, .cc-airplay";
 
 function applyCCStyle(style) {
     if (!panelEl) return;
     const next = style === "liquid" ? "liquid" : "frosted";
+    const surfaces = panelEl.querySelectorAll(LIQUID_SURFACE_SEL);
 
     if (next === "liquid") {
+        removeLiquidGlass(panelEl);                 // 面板本身不做玻璃 → 空隙普通透明
         panelEl.setAttribute("data-cc-style", "liquid");
-        applyLiquidGlass(panelEl, CC_LIQUID_OPTS);
+        surfaces.forEach((el) => { try { applyLiquidGlass(el, CC_LIQUID_OPTS); } catch (e) { } });
     } else {
+        surfaces.forEach((el) => { try { removeLiquidGlass(el); } catch (e) { } });
         removeLiquidGlass(panelEl);
         panelEl.setAttribute("data-cc-style", "frosted");
     }
