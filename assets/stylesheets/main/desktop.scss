@@ -33,6 +33,21 @@
             font-family: "SFPro-Medium", "PingFangSC-Medium";
             margin-top: 5px;
         }
+
+        input.inline-rename {
+            width: 92px;
+            margin-top: 5px;
+            font-size: 13px;
+            font-family: "SFPro-Medium", "PingFangSC-Medium";
+            text-align: center;
+            color: #000;
+            background: #fff;
+            border: 2px solid #3478f6;
+            border-radius: 4px;
+            outline: none;
+            padding: 1px 2px;
+            box-sizing: border-box;
+        }
     }
 }
 

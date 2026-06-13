@@ -79,6 +79,7 @@ export async function initDesktopFiles() {
             const item = document.createElement("div");
             item.className = "item";
             item.dataset.vfsPath = path;
+            item.dataset.kind = entry.kind;
 
             const icon = document.createElement("img");
             icon.src = entry.kind === "dir"

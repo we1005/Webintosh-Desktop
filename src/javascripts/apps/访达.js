@@ -1,6 +1,7 @@
 /* 访达 —— 对接 VFS 的真实文件管理器 */
 import vfs, { joinPath, dirname, basename, normPath } from "../../../os/vfs.js";
 import { createContextMenu } from "../ui/contextMenu.js";
+import { startInlineRename } from "../ui/inlineRename.js";
 import { bringToFront } from "../window.js";
 
 (() => {
@@ -160,12 +161,16 @@ import { bringToFront } from "../window.js";
             { label: "打开", action: () => openEntry(entry, path) },
             { type: "separator" },
             {
-                label: "重命名", action: async () => {
-                    const newName = prompt("重命名为:", entry.name);
-                    if (!newName || !newName.trim() || newName === entry.name) return;
-                    try {
-                        await vfs.mv(path, joinPath(currentPath, newName.trim()));
-                    } catch (err) { alert("重命名失败: " + err.message); }
+                label: "重命名", action: () => {
+                    const labelEl = fileItem.querySelector("span");
+                    startInlineRename(labelEl, {
+                        initial: entry.name,
+                        isDir: entry.kind === "dir",
+                        onCommit: async (newName) => {
+                            try { await vfs.rename(path, newName); }
+                            catch (err) { alert("重命名失败: " + err.message); }
+                        },
+                    });
                 }
             },
             { type: "separator" },

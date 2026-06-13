@@ -287,6 +287,17 @@ class VFS extends EventTarget {
         this._broadcast(dirname(src));
         if (dirname(dst) !== dirname(src)) this._broadcast(dirname(dst));
     }
+    // 同目录重命名:校验非法字符 / 空名 / 重名后再 mv(供桌面与访达共用)
+    async rename(srcPath, newName) {
+        await this.init();
+        const name = (newName || '').trim();
+        if (!name) throw new Error('名称不能为空');
+        if (name.includes('/')) throw new Error('名称不能包含「/」');
+        const dst = joinPath(dirname(srcPath), name);
+        if (dst === srcPath) return; // 未改动
+        if (await this.exists(dst)) throw new Error('已存在同名项目「' + name + '」');
+        await this.mv(srcPath, dst);
+    }
 
     // ---- 设置存取（键值，localStorage 简单可靠，跨后端不变）----
     getSetting(key, fallback = null) {

@@ -1,6 +1,7 @@
 import { finderbar } from './finderbar.js';
 import { dock } from './dock.js';
 import { createContextMenu, createDesktopFile } from './ui/contextMenu.js';
+import { startInlineRename } from './ui/inlineRename.js';
 import vfs, { joinPath } from '../../os/vfs.js';
 
 // 在 /Desktop 下取不重名的名称（扩展名保持在末尾）
@@ -41,13 +42,34 @@ document.addEventListener("contextmenu", (e) => {
             { type: "separator" },
             {
                 label: "重命名", action: () => {
-                    const newName = prompt("重命名为:", p.innerText);
-                    if (newName && newName.trim() !== "") {
-                        p.innerText = newName;
+                    const vfsPath = item.dataset.vfsPath;
+                    const isDir = item.dataset.kind === "dir";
+                    startInlineRename(p, {
+                        initial: p.innerText,
+                        isDir,
+                        onCommit: async (newName) => {
+                            if (vfsPath) {
+                                // 走 VFS:写回文件系统,desktop-sync 与访达自动同步重渲染
+                                try { await vfs.rename(vfsPath, newName); }
+                                catch (err) { alert("重命名失败: " + err.message); }
+                            } else {
+                                p.innerText = newName; // 旧式拖入项无 VFS 记录,仅改显示
+                            }
+                        },
+                    });
+                }
+            },
+            {
+                label: "移到废纸篓", action: async () => {
+                    const vfsPath = item.dataset.vfsPath;
+                    if (vfsPath) {
+                        try { await vfs.rm(vfsPath); }
+                        catch (err) { alert("删除失败: " + err.message); }
+                    } else {
+                        item.remove();
                     }
                 }
             },
-            { label: "移到废纸篓", action: () => item.remove() },
             { type: "separator" },
             { label: "显示简介", disabled: true },
         ]);
