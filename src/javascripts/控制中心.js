@@ -1,15 +1,21 @@
 /* ========================================================================
-   控制中心 (Control Center) — macOS Sequoia 毛玻璃面板
+   控制中心 (Control Center) — 源码级照搬 thanas-os ControlCenter 布局
    自包含模块,零外部接线。被加载后即可使用:
      window.__toggleControlCenter(anchorEl)  切换显隐(首次注入 DOM)
      window.__closeControlCenter()           关闭面板
    CSS 由本文件动态 <link> 注入;面板 HTML 由本文件 fetch 注入 body。
    亮度遮罩元素 id = "cc-brightness-dim"。
-   音量写入 window.__systemVolume (0..1)。
+
+   全局音量总线(与 Music-Player 共享):
+     window.__systemVolume 约定为 0..1。
+     改变时:window.__systemVolume = v;
+             document.dispatchEvent(new CustomEvent('webintosh-volume',{detail:v}));
+     监听 'webintosh-volume' 在外部改变时同步自身 Sound 滑块。
    ======================================================================== */
 
 const CSS_HREF = "./assets/stylesheets/控制中心/index.css";
 const HTML_SRC = "./assets/apps/控制中心.html";
+const VOLUME_EVENT = "webintosh-volume";
 
 let panelEl = null;       // #cc-panel
 let dimEl = null;         // #cc-brightness-dim
@@ -17,9 +23,12 @@ let lastAnchor = null;
 let outsideHandler = null;
 let injecting = false;
 
+let volumeSliderEl = null;   // Sound 滑块(供事件总线回填)
+let applyingExternalVol = false; // 防回环标志
+
 // 默认全局音量
 if (typeof window.__systemVolume !== "number") {
-    window.__systemVolume = 0.7;
+    window.__systemVolume = 0.65;
 }
 
 /* ---------------- 资源注入 ---------------- */
@@ -57,9 +66,7 @@ async function ensurePanel() {
         document.body.appendChild(node);
         panelEl = node;
         wirePanel(panelEl);
-        // 材质完全由 控制中心/index.css 的 backdrop-filter: blur()+saturate() 提供,
-        // 干净磨砂玻璃、无任何色散折射边(与真实 macOS 控制中心一致)。
-        // 故此处不再对 #cc-panel 应用 liquid-glass(避免彩虹边与双层材质冲突)。
+        // 材质完全由 控制中心/index.css 的 backdrop-filter: blur()+saturate() 提供。
     } finally {
         injecting = false;
     }
@@ -114,37 +121,45 @@ function isVisible() {
 /* ---------------- 交互接线 ---------------- */
 
 function wirePanel(root) {
-    // 连接性药丸切换 (Wi-Fi / 蓝牙 / 隔空投送)
+    // 连接性行切换 (Wi-Fi / 蓝牙 / 隔空投送)
     root.querySelectorAll('.cc-row[data-cc]').forEach((row) => {
         const sub = row.querySelector('.cc-sub');
         const key = row.getAttribute('data-cc');
         row.addEventListener('click', () => {
             const on = row.classList.toggle('cc-on');
             if (sub) {
-                if (key === 'wifi') sub.textContent = on ? 'Home' : '关';
+                if (key === 'wifi') sub.textContent = on ? 'Webintosh-Net' : '关';
+                else if (key === 'airdrop') sub.textContent = on ? '所有人' : '仅限联系人';
                 else sub.textContent = on ? '开' : '关';
             }
         });
     });
 
-    // Focus 大药丸
+    // Focus 按钮
     const focus = root.querySelector('.cc-focus[data-cc="focus"]');
     if (focus) {
         const fsub = focus.querySelector('.cc-sub');
-        const toggleFocus = () => {
+        focus.addEventListener('click', () => {
             const on = focus.classList.toggle('cc-on');
             if (fsub) fsub.textContent = on ? '开' : '关';
-        };
-        focus.addEventListener('click', toggleFocus);
-        focus.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFocus(); }
         });
     }
 
-    // 舞台调度 / 屏幕镜像 大圆钮
-    root.querySelectorAll('.cc-bigbtn[data-cc]').forEach((btn) => {
-        btn.addEventListener('click', () => btn.classList.toggle('cc-on'));
+    // 两个方形按钮:舞台调度 / 主题(浅色 <-> 深色)切换
+    root.querySelectorAll('.cc-tile[data-cc]').forEach((btn) => {
+        const key = btn.getAttribute('data-cc');
+        const label = btn.querySelector('[data-cc="theme-label"]');
+        btn.addEventListener('click', () => {
+            const on = btn.classList.toggle('cc-on');
+            if (key === 'theme' && label) label.textContent = on ? '深色' : '浅色';
+        });
     });
+
+    // 声音卡 AirPlay 圆钮:视觉切换
+    const airplay = root.querySelector('.cc-airplay[data-cc="sound-airplay"]');
+    if (airplay) {
+        airplay.addEventListener('click', () => airplay.classList.toggle('cc-on'));
+    }
 
     // 正在播放 播放/暂停 图标切换
     const playBtn = root.querySelector('.cc-np-btn[data-cc="play"]');
@@ -160,14 +175,21 @@ function wirePanel(root) {
     }
     // 上一首/下一首 仅按下反馈,无逻辑
 
-    // 底部快捷圆钮:视觉切换
-    root.querySelectorAll('.cc-quickbtn[data-cc]').forEach((btn) => {
-        btn.addEventListener('click', () => btn.classList.toggle('cc-on'));
-    });
-
     // 滑块
     wireSlider(root.querySelector('.cc-slider[data-cc="brightness"]'), onBrightness);
-    wireSlider(root.querySelector('.cc-slider[data-cc="volume"]'), onVolume);
+    volumeSliderEl = root.querySelector('.cc-slider[data-cc="volume"]');
+    wireSlider(volumeSliderEl, onVolume);
+
+    // 初始化声音滑块为当前全局音量
+    setSliderValue(volumeSliderEl, window.__systemVolume);
+}
+
+function setSliderValue(slider, v) {
+    if (!slider) return;
+    v = Math.min(1, Math.max(0, v));
+    const fill = slider.querySelector('.cc-slider-fill');
+    slider.setAttribute('data-value', String(v));
+    if (fill) fill.style.width = (v * 100) + '%';
 }
 
 function wireSlider(slider, onChange) {
@@ -186,8 +208,9 @@ function wireSlider(slider, onChange) {
 
     // 初始化填充
     const init = parseFloat(slider.getAttribute('data-value'));
-    if (fill) fill.style.width = ((isNaN(init) ? 1 : init) * 100) + '%';
-    onChange(isNaN(init) ? 1 : init);
+    const iv = isNaN(init) ? 1 : init;
+    if (fill) fill.style.width = (iv * 100) + '%';
+    onChange(iv);
 
     slider.addEventListener('pointerdown', (e) => {
         dragging = true;
@@ -214,8 +237,23 @@ function onBrightness(v) {
 }
 
 function onVolume(v) {
+    // 拖动 Sound 滑块 -> 写总线 + 广播。
+    // 防回环:若本次是外部事件回填触发的,则不再广播。
     window.__systemVolume = v;
+    if (applyingExternalVol) return;
+    document.dispatchEvent(new CustomEvent(VOLUME_EVENT, { detail: v }));
 }
+
+/* ---------------- 全局音量总线:监听外部(Music-Player)变更 ---------------- */
+document.addEventListener(VOLUME_EVENT, (e) => {
+    const v = typeof e.detail === "number" ? e.detail : window.__systemVolume;
+    window.__systemVolume = Math.min(1, Math.max(0, v));
+    if (!volumeSliderEl) return;
+    // 用标志位防止回填又触发广播造成回环
+    applyingExternalVol = true;
+    setSliderValue(volumeSliderEl, window.__systemVolume);
+    applyingExternalVol = false;
+});
 
 /* ---------------- 对外接口 ---------------- */
 

@@ -238,7 +238,12 @@
     const audio = new Audio();
     audio.preload = "metadata";
     audio.crossOrigin = "anonymous";
-    audio.volume = 0.65;
+    // 接入全局音量总线（与控制中心 Sound 滑块共享 window.__systemVolume，0..1）
+    const VOLUME_EVENT = "webintosh-volume";
+    let applyingExternalVol = false; // 防回环标志
+    const initialVol = typeof window.__systemVolume === "number" ? window.__systemVolume : 0.65;
+    window.__systemVolume = initialVol;
+    audio.volume = Math.max(0, Math.min(1, initialVol));
 
     /* ---------- 生命周期：窗口移除时停止播放 + 解绑 ---------- */
     const ac = new AbortController();
@@ -644,6 +649,8 @@
         const pct = max > min ? ((parseFloat(el.value) - min) / (max - min)) * 100 : 0;
         el.style.background = `linear-gradient(to right, ${fill} ${pct}%, ${RANGE_TRACK} ${pct}%)`;
     }
+    // 音量滑块初值同步为全局音量
+    if (volSlider) volSlider.value = String(Math.round(initialVol * 100));
     paintRange(volSlider, "#fa2d48");
     paintRange(seek, "#fa2d48");
 
@@ -716,10 +723,30 @@
         seeking = false;
     });
 
-    // 音量
+    // 音量：拖自己的滑块 -> 写总线 + 广播（防回环时不广播）
     on(volSlider, "input", () => {
-        audio.volume = Math.max(0, Math.min(1, parseInt(volSlider.value, 10) / 100));
+        const v = Math.max(0, Math.min(1, parseInt(volSlider.value, 10) / 100));
+        audio.volume = v;
+        window.__systemVolume = v;
         paintRange(volSlider, "#fa2d48");
+        if (!applyingExternalVol) {
+            document.dispatchEvent(new CustomEvent(VOLUME_EVENT, { detail: v }));
+        }
+    });
+
+    // 监听全局音量变更（如控制中心 Sound 滑块）-> 同步 audio 与滑块填充
+    on(document, VOLUME_EVENT, (e) => {
+        const v = Math.max(0, Math.min(1,
+            typeof e.detail === "number" ? e.detail : (window.__systemVolume || 0)));
+        window.__systemVolume = v;
+        if (Math.abs(audio.volume - v) < 0.0005) return; // 值未变，跳过避免回环
+        applyingExternalVol = true;
+        audio.volume = v;
+        if (volSlider) {
+            volSlider.value = String(Math.round(v * 100));
+            paintRange(volSlider, "#fa2d48");
+        }
+        applyingExternalVol = false;
     });
 
     /* ===================================================================

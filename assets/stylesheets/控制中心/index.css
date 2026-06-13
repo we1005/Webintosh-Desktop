@@ -1,7 +1,13 @@
 /* ========================================================================
-   控制中心 (Control Center) — macOS Sequoia 毛玻璃面板
-   自包含样式。由 src/javascripts/控制中心.js 动态注入 <link>。
-   所有类名以 cc- 前缀,避免与项目现有样式冲突。
+   控制中心 (Control Center) — 源码级照搬 thanas-os ControlCenter
+   深色磨砂玻璃面板。由 src/javascripts/控制中心.js 动态注入 <link>。
+   所有规则均以 #cc-panel / .cc-* 作用域前缀,禁止裸选择器。
+
+   还原自 thanas-os/src/components/macos/ControlCenter.tsx 的关键比例:
+     面板 width:360 / rounded-3xl(24px) / p-3(12px) / 深色 rgba(28,28,32,.55)
+     backdrop blur(40px) saturate(180%) / 内卡 bg-white/10 / rounded-2xl(16px)
+     圆形彩色图标 36px(w-9 h-9)/ 蓝 #0a84ff / 专注紫 violet-500 #8b5cf6
+     滑块轨 h-7(28px)/ 白色填充 / 图标内嵌左侧
    ======================================================================== */
 
 /* 全屏亮度遮罩(由 JS 注入到 body 末尾) */
@@ -15,39 +21,36 @@
     transition: opacity 0.08s linear;
 }
 
-/* 面板根容器 */
+/* ---------------- 面板根容器 ---------------- */
 #cc-panel {
     position: fixed;
     top: 30px;
     right: 8px;
-    width: 320px;
+    width: 360px;
     box-sizing: border-box;
-    padding: 14px;
+    padding: 12px;
     z-index: 2147483647;
 
-    /* 干净 macOS 磨砂玻璃:仅 blur+saturate,绝无任何 url() 折射 / 彩虹色散边 */
-    border-radius: 20px;
-    border: none;
-    background: rgba(255, 255, 255, 0.5);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(28, 28, 32, 0.55);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
     backdrop-filter: blur(40px) saturate(180%);
-    box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.35),
-        inset 0 0 0 0.5px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.5);
 
-    color: #1d1d1f;
+    color: #ffffff;
     font-family: "SFPro-Medium", "PingFangSC-Medium", -apple-system, "Helvetica Neue", sans-serif;
     -webkit-user-select: none;
     -moz-user-select: none;
     user-select: none;
 
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 
-    /* 出现/消失:仅动 transform + opacity,走 GPU 合成 */
+    /* 出现/消失:transform + opacity,GPU 合成 */
     opacity: 0;
-    transform: translateY(-8px) scale(0.97);
+    transform: translateY(-10px) scale(0.96);
     transform-origin: top right;
     transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.32, 0.72, 0, 1);
     pointer-events: none;
@@ -60,119 +63,97 @@
     pointer-events: auto;
 }
 
-/* 通用玻璃卡片(深色模式下偏白的内部小卡片) */
-.cc-card {
-    background: rgba(255, 255, 255, 0.55);
-    border-radius: 14px;
-    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.6);
+#cc-panel *,
+#cc-panel *::before,
+#cc-panel *::after {
     box-sizing: border-box;
 }
 
-/* 网格区块跨列辅助类 */
-.cc-span2 {
-    grid-column: 1 / 3;
+/* 通用磨砂内卡(bg-white/10 rounded-2xl) */
+#cc-panel .cc-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
 }
 
-/* ---------------- 左上:连接性大药丸 (Wi-Fi / 蓝牙 / AirDrop) -------- */
-.cc-connect {
-    padding: 10px 12px;
+/* ---------------- 顶部两列网格(grid-cols-2 gap-2) ---------------- */
+#cc-panel .cc-top-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+/* 左:连接性大卡(p-2.5 flex-col gap-1.5) */
+#cc-panel .cc-connect {
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
 }
 
-.cc-row {
+#cc-panel .cc-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    padding: 4px 6px;
+    margin: 0;
+    border: none;
+    background: transparent;
+    border-radius: 12px;
     cursor: default;
-    margin: 0 -6px;
-    padding: 2px 6px;
-    border-radius: 8px;
+    text-align: left;
+    color: inherit;
+    font-family: inherit;
     transition: background 0.12s ease;
 }
 
-.cc-row:hover {
-    background: rgba(255, 255, 255, 0.28);
+#cc-panel .cc-row:hover {
+    background: rgba(0, 0, 0, 0.25);
 }
 
-.cc-glyph {
-    width: 30px;
-    height: 30px;
-    flex: 0 0 30px;
+/* 圆形图标(w-9 h-9 = 36px,关态 bg-white/15) */
+#cc-panel .cc-glyph {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    /* 关态:清晰可辨的中性浅灰底 + 中灰图标(在浅色玻璃卡片上有足够对比) */
-    background: rgba(120, 120, 128, 0.20);
-    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.35);
-    color: rgba(0, 0, 0, 0.55);
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
     transition: background 0.15s ease, color 0.15s ease, transform 0.08s ease;
 }
 
-.cc-glyph svg {
-    width: 17px;
-    height: 17px;
+#cc-panel .cc-glyph svg {
+    width: 22px;
+    height: 22px;
     display: block;
 }
 
-.cc-row.cc-on .cc-glyph {
-    background: #0a84ff;
-    color: #fff;
-    box-shadow: 0 1px 3px rgba(10, 132, 255, 0.5);
+/* Wi-Fi 图标略大(源 w-[24px]) */
+#cc-panel .cc-row[data-cc="wifi"] .cc-glyph svg {
+    width: 24px;
+    height: 24px;
 }
 
-.cc-row:active .cc-glyph {
+/* 开态:macOS 蓝 */
+#cc-panel .cc-row.cc-on .cc-glyph {
+    background: #0a84ff;
+    color: #fff;
+}
+
+#cc-panel .cc-row:active .cc-glyph {
     transform: scale(0.92);
 }
 
-.cc-labels {
+#cc-panel .cc-labels {
     display: flex;
     flex-direction: column;
     line-height: 1.15;
+    min-width: 0;
 }
 
-.cc-labels .cc-title {
-    font-family: "SFPro-Semibold", "PingFangSC-Semibold", sans-serif;
-    font-weight: 600;
-    font-size: 13px;
-}
-
-.cc-labels .cc-sub {
-    font-size: 11px;
-    color: rgba(0, 0, 0, 0.5);
-}
-
-/* ---------------- 右上:正在播放卡片 -------------------------------- */
-.cc-nowplaying {
-    padding: 10px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.cc-np-top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.cc-cover {
-    width: 38px;
-    height: 38px;
-    flex: 0 0 38px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #ff5e62, #ff9966 60%, #ffd194);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-}
-
-.cc-np-meta {
-    overflow: hidden;
-    line-height: 1.2;
-}
-
-.cc-np-song {
+#cc-panel .cc-labels .cc-title {
     font-family: "SFPro-Semibold", "PingFangSC-Semibold", sans-serif;
     font-weight: 600;
     font-size: 12.5px;
@@ -181,28 +162,286 @@
     text-overflow: ellipsis;
 }
 
-.cc-np-artist {
-    font-size: 11px;
-    color: rgba(0, 0, 0, 0.5);
+#cc-panel .cc-labels .cc-sub {
+    font-size: 10.5px;
+    color: rgba(255, 255, 255, 0.55);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.cc-np-controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 6px;
+/* ---------------- 右:Focus(上) + 两方形按钮(下) ---------------- */
+#cc-panel .cc-right-stack {
+    display: grid;
+    grid-template-rows: auto auto;
+    gap: 8px;
 }
 
-.cc-np-btn {
+/* Focus 按钮(rounded-2xl bg-white/10 px-3 py-2 min-h-[78px]) */
+#cc-panel .cc-focus {
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    padding: 8px 12px;
+    min-height: 78px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: default;
+    text-align: left;
+    color: inherit;
+    font-family: inherit;
+    transition: background 0.15s ease, transform 0.08s ease;
+}
+
+#cc-panel .cc-focus:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+#cc-panel .cc-focus:active {
+    transform: scale(0.98);
+}
+
+/* Focus 内圆形图标(w-10 h-10 = 40px) */
+#cc-panel .cc-glyph-lg {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+}
+
+#cc-panel .cc-glyph-lg svg {
+    width: 17px;
+    height: 17px;
+}
+
+/* 专注激活:图标圈紫色 violet-500 */
+#cc-panel .cc-focus.cc-on .cc-glyph {
+    background: #8b5cf6;
+    color: #fff;
+}
+
+/* 方形按钮对(grid-cols-2 gap-2) */
+#cc-panel .cc-square-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+/* 方形按钮(rounded-2xl bg-white/10 aspect-square min-h-[68px]) */
+#cc-panel .cc-tile {
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    padding: 10px;
+    min-height: 68px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: default;
+    color: inherit;
+    font-family: inherit;
+    transition: background 0.15s ease, transform 0.08s ease;
+}
+
+#cc-panel .cc-tile:hover {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+#cc-panel .cc-tile:active {
+    transform: scale(0.96);
+}
+
+/* 方形按钮内圆形图标(w-8 h-8 = 32px,关态 bg-white/15) */
+#cc-panel .cc-tile-glyph {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transition: background 0.15s ease;
+}
+
+#cc-panel .cc-tile-glyph svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+#cc-panel .cc-tile-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.1;
+}
+
+/* 激活配色:蓝 / 琥珀 */
+#cc-panel .cc-tile.cc-on[data-accent="blue"] .cc-tile-glyph {
+    background: #3b82f6;
+}
+
+#cc-panel .cc-tile.cc-on[data-accent="amber"] .cc-tile-glyph {
+    background: #f59e0b;
+}
+
+/* ---------------- 显示 / 声音 滑块卡(rounded-2xl px-3 py-3) ---------------- */
+#cc-panel .cc-slider-card {
+    padding: 12px;
+}
+
+#cc-panel .cc-slider-card .cc-slider-label {
+    font-family: "SFPro-Semibold", "PingFangSC-Semibold", sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    margin-bottom: 8px;
+}
+
+#cc-panel .cc-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+}
+
+/* 轨道(h-7 = 28px,bg rgba(255,255,255,.18)) */
+#cc-panel .cc-slider {
+    position: relative;
+    flex: 1 1 auto;
+    height: 28px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    overflow: hidden;
+    cursor: pointer;
+    touch-action: none;
+}
+
+/* 白色填充 */
+#cc-panel .cc-slider-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 65%;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* 图标内嵌于填充左侧(left-2,深灰半透,源 text-neutral-700 opacity-50) */
+#cc-panel .cc-slider-icon {
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: rgba(64, 64, 64, 0.55);
+    pointer-events: none;
+    z-index: 10;
+}
+
+#cc-panel .cc-slider-icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* 声音卡右侧 AirPlay 圆钮(w-9 h-9 = 36px,关态 bg-white/15) */
+#cc-panel .cc-airplay {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    transition: background 0.15s ease, transform 0.08s ease;
+}
+
+#cc-panel .cc-airplay svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+#cc-panel .cc-airplay:active {
+    transform: scale(0.9);
+}
+
+#cc-panel .cc-airplay.cc-on {
+    background: #3b82f6;
+}
+
+/* ---------------- 正在播放卡(rounded-2xl bg-white/10 p-3 flex gap-3) ---------------- */
+#cc-panel .cc-nowplaying {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 专辑封面(w-11 h-11 = 44px,rounded-lg) */
+#cc-panel .cc-cover {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    background-color: rgba(255, 255, 255, 0.12);
+    background-image: linear-gradient(135deg, #ff5e62, #ff9966 60%, #ffd194);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+#cc-panel .cc-cover.cc-has-art {
+    background-image: none;
+}
+
+#cc-panel .cc-np-meta {
+    flex: 1 1 auto;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+#cc-panel .cc-np-song {
+    font-family: "SFPro-Semibold", "PingFangSC-Semibold", sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#cc-panel .cc-np-artist {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.65);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#cc-panel .cc-np-controls {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 0 0 auto;
+}
+
+#cc-panel .cc-np-btn {
     width: 30px;
     height: 30px;
     border-radius: 50%;
     border: none;
     background: transparent;
-    color: #1d1d1f;
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -210,198 +449,16 @@
     transition: background 0.12s ease, transform 0.08s ease;
 }
 
-.cc-np-btn svg {
+#cc-panel .cc-np-btn svg {
     width: 16px;
     height: 16px;
-}
-
-.cc-np-btn.cc-np-play svg {
-    width: 18px;
-    height: 18px;
-}
-
-.cc-np-btn:hover {
-    background: rgba(0, 0, 0, 0.06);
-}
-
-.cc-np-btn:active {
-    transform: scale(0.88);
-    background: rgba(0, 0, 0, 0.1);
-}
-
-/* ---------------- Focus 大药丸 + 右侧两个圆钮 ----------------------- */
-.cc-focus {
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: default;
-    transition: background 0.15s ease, transform 0.08s ease;
-}
-
-.cc-focus .cc-labels .cc-title {
-    font-size: 13px;
-}
-
-.cc-focus:hover {
-    background: rgba(255, 255, 255, 0.7);
-}
-
-.cc-focus:active {
-    transform: scale(0.98);
-}
-
-/* 专注激活态:整颗药丸高亮(macOS 紫色),文字反白 */
-.cc-focus.cc-on {
-    background: #7d5cff;
-    color: #fff;
-}
-
-.cc-focus.cc-on .cc-glyph {
-    background: rgba(255, 255, 255, 0.25);
-    color: #fff;
-    box-shadow: none;
-}
-
-.cc-focus.cc-on .cc-sub {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.cc-square-pair {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    justify-content: center;
-}
-
-.cc-bigbtn {
-    width: 100%;
-    height: 56px;
-    border: none;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.55);
-    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.6);
-    color: #1d1d1f;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    cursor: default;
-    font-family: inherit;
-    transition: background 0.15s ease, transform 0.08s ease;
-}
-
-.cc-bigbtn svg {
-    width: 18px;
-    height: 18px;
-}
-
-.cc-bigbtn .cc-bigbtn-label {
-    font-size: 11px;
-}
-
-.cc-bigbtn:hover {
-    background: rgba(255, 255, 255, 0.7);
-}
-
-.cc-bigbtn:active {
-    transform: scale(0.96);
-}
-
-.cc-bigbtn.cc-on {
-    background: #0a84ff;
-    color: #fff;
-}
-
-/* ---------------- 显示 / 声音 滑块 --------------------------------- */
-.cc-slider-card {
-    padding: 10px 12px 12px;
-}
-
-.cc-slider-card .cc-slider-label {
-    font-family: "SFPro-Semibold", "PingFangSC-Semibold", sans-serif;
-    font-weight: 600;
-    font-size: 13px;
-    margin-bottom: 6px;
-}
-
-.cc-slider {
-    position: relative;
-    height: 26px;
-    border-radius: 13px;
-    background: rgba(120, 120, 128, 0.22);
-    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.5);
-    overflow: hidden;
-    cursor: default;
-    touch-action: none;
-}
-
-.cc-slider-fill {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 50%;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
-}
-
-.cc-slider-icon {
-    position: absolute;
-    top: 50%;
-    left: 7px;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    color: rgba(0, 0, 0, 0.55);
-    pointer-events: none;
-    z-index: 2;
-}
-
-.cc-slider-icon svg {
-    width: 100%;
-    height: 100%;
     display: block;
 }
 
-/* ---------------- 底部一排快捷圆钮 --------------------------------- */
-.cc-quickrow {
-    display: flex;
-    gap: 8px;
-    padding: 4px 2px 2px;
+#cc-panel .cc-np-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
 }
 
-.cc-quickbtn {
-    flex: 1 1 0;
-    min-width: 0;
-    aspect-ratio: 1 / 1;
-    border: none;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.55);
-    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.6);
-    color: #1d1d1f;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: default;
-    transition: background 0.15s ease, transform 0.08s ease, color 0.15s ease;
-}
-
-.cc-quickbtn svg {
-    width: 19px;
-    height: 19px;
-}
-
-.cc-quickbtn:hover {
-    background: rgba(255, 255, 255, 0.72);
-}
-
-.cc-quickbtn:active {
-    transform: scale(0.93);
-}
-
-.cc-quickbtn.cc-on {
-    background: #0a84ff;
-    color: #fff;
+#cc-panel .cc-np-btn:active {
+    transform: scale(0.88);
 }
