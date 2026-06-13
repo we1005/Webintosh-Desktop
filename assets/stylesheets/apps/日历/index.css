@@ -1,0 +1,221 @@
+.calendarapp {
+  box-shadow: 0 36px 100px 0 rgba(0, 0, 0, 0.4), 0 0 3px 0 rgba(0, 0, 0, 0.55), inset 0 0 3px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  width: 900px;
+  height: 620px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  position: absolute;
+  top: calc(50% - 310px);
+  left: calc(50% - 450px);
+  overflow: hidden;
+  background: #ffffff;
+  font-family: "SFPro-Regular", "PingFangSC-Regular";
+}
+
+/* ---------- 顶部红绿灯栏 ---------- */
+.calendarapp .topbar {
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  background: linear-gradient(#f6f6f6, #efefef);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.calendarapp .topbar .wintools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 76px;
+  flex-shrink: 0;
+}
+.calendarapp .topbar .wintools .red,
+.calendarapp .topbar .wintools .yellow,
+.calendarapp .topbar .wintools .green {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(0, 0, 0, 0.2);
+}
+.calendarapp .topbar .wintools .red {
+  background: #ff5f57;
+}
+.calendarapp .topbar .wintools .yellow {
+  background: #febc2e;
+}
+.calendarapp .topbar .wintools .green {
+  background: #28c840;
+}
+.calendarapp .topbar .wintools div:active {
+  filter: brightness(0.85);
+}
+.calendarapp .topbar .title {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  color: #4a4a4a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.calendarapp .topbar .topbar-spacer {
+  width: 76px;
+  flex-shrink: 0;
+}
+
+/* ---------- 主体 ---------- */
+.calendarapp .body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  background: #ffffff;
+}
+
+/* ---------- 工具栏：月份标题 + 导航 ---------- */
+.calendarapp .toolbar {
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.calendarapp .toolbar .cal-title {
+  margin: 0;
+  font-size: 22px;
+  font-family: "SFPro-Bold", "PingFangSC-Semibold";
+  font-weight: 700;
+  color: #1d1d1f;
+  letter-spacing: 0.2px;
+}
+.calendarapp .toolbar .toolbar-spacer {
+  flex: 1;
+}
+.calendarapp .toolbar .nav-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.calendarapp .toolbar .nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  min-width: 28px;
+  padding: 0 6px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 7px;
+  background: #ffffff;
+  color: #444;
+  font-size: 13px;
+  font-family: "SFPro-Regular", "PingFangSC-Regular";
+  cursor: pointer;
+  outline: none;
+  transition: background 0.12s ease;
+}
+.calendarapp .toolbar .nav-btn.today-btn {
+  padding: 0 12px;
+}
+.calendarapp .toolbar .nav-btn:hover {
+  background: #f1f1f1;
+}
+.calendarapp .toolbar .nav-btn:active {
+  background: #e3e3e3;
+}
+
+/* ---------- 周几表头 ---------- */
+.calendarapp .weekday-row {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.calendarapp .weekday-row span {
+  text-align: right;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  color: #8a8a8e;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ---------- 月网格 ---------- */
+.calendarapp .grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  min-height: 0;
+}
+.calendarapp .grid .cell {
+  position: relative;
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 6px 10px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background 0.1s ease;
+}
+.calendarapp .grid .cell:nth-child(7n) {
+  border-right: none;
+}
+.calendarapp .grid .cell:hover {
+  background: rgba(0, 0, 0, 0.025);
+}
+.calendarapp .grid .cell .day-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-family: "SFPro-Regular", "PingFangSC-Regular";
+  color: #1d1d1f;
+}
+.calendarapp .grid .cell.other-month .day-num {
+  color: #c4c4c8;
+}
+.calendarapp .grid .cell.today .day-num {
+  background: #ff3b30;
+  color: #ffffff;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+}
+
+/* ---------- 事件 ---------- */
+.calendarapp .grid .cell .event-dot {
+  position: absolute;
+  bottom: 8px;
+  left: 16px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff3b30;
+}
+.calendarapp .grid .cell .event-list {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.calendarapp .grid .cell .event-item {
+  font-size: 11px;
+  font-family: "SFPro-Regular", "PingFangSC-Regular";
+  color: #ffffff;
+  background: #ff3b30;
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.calendarapp .grid .cell.other-month .event-item {
+  opacity: 0.45;
+}

@@ -1,0 +1,86 @@
+<div class="contactsapp window" id="通讯录">
+    <div class="topbar">
+        <div class="wintools">
+            <div class="red"></div>
+            <div class="yellow"></div>
+            <div class="green"></div>
+        </div>
+        <p class="title">通讯录</p>
+    </div>
+    <div class="body">
+        <aside class="groups">
+            <div class="groups-label">我的卡片</div>
+            <ul class="group-list">
+                <li class="group-item active" data-group="全部">全部联系人</li>
+                <li class="group-item" data-group="个人">个人</li>
+                <li class="group-item" data-group="工作">工作</li>
+            </ul>
+        </aside>
+        <section class="listpane">
+            <div class="search-bar">
+                <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                    <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <input class="search-input" type="text" placeholder="搜索" spellcheck="false" />
+                <button class="add-btn" title="新建联系人">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="contact-list"></div>
+        </section>
+        <section class="detailpane">
+            <div class="detail-view">
+                <div class="detail-empty">
+                    <p class="detail-empty-title">未选择联系人</p>
+                    <p class="detail-empty-sub">从左侧选择一位联系人查看详情。</p>
+                </div>
+                <div class="detail-card" hidden>
+                    <div class="detail-head">
+                        <div class="detail-avatar"></div>
+                        <div class="detail-name"></div>
+                    </div>
+                    <div class="detail-fields"></div>
+                    <button class="delete-btn" title="删除联系人">删除联系人</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="add-overlay" hidden>
+        <div class="add-dialog">
+            <div class="add-dialog-title">新建联系人</div>
+            <form class="add-form">
+                <label class="add-field">
+                    <span>姓名</span>
+                    <input name="name" type="text" autocomplete="off" spellcheck="false" required />
+                </label>
+                <label class="add-field">
+                    <span>电话</span>
+                    <input name="phone" type="text" autocomplete="off" spellcheck="false" />
+                </label>
+                <label class="add-field">
+                    <span>邮箱</span>
+                    <input name="email" type="text" autocomplete="off" spellcheck="false" />
+                </label>
+                <label class="add-field">
+                    <span>分组</span>
+                    <select name="group">
+                        <option value="个人">个人</option>
+                        <option value="工作">工作</option>
+                    </select>
+                </label>
+                <label class="add-field add-field-note">
+                    <span>备注</span>
+                    <textarea name="note" rows="2" spellcheck="false"></textarea>
+                </label>
+                <div class="add-actions">
+                    <button type="button" class="add-cancel">取消</button>
+                    <button type="submit" class="add-save">完成</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

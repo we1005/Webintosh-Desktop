@@ -1,0 +1,242 @@
+.notesapp {
+  box-shadow: 0 36px 100px 0 rgba(0, 0, 0, 0.4), 0 0 3px 0 rgba(0, 0, 0, 0.55), inset 0 0 3px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  width: 820px;
+  height: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  position: absolute;
+  top: calc(50% - 280px);
+  left: calc(50% - 410px);
+  overflow: hidden;
+  background: #ffffff;
+  font-family: "SFPro-Regular", "PingFangSC-Regular";
+}
+.notesapp .topbar {
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  background: linear-gradient(#fbf6e7, #f6efd9);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.notesapp .topbar .wintools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 76px;
+  flex-shrink: 0;
+}
+.notesapp .topbar .wintools .red,
+.notesapp .topbar .wintools .yellow,
+.notesapp .topbar .wintools .green {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(0, 0, 0, 0.2);
+}
+.notesapp .topbar .wintools .red {
+  background: #ff5f57;
+}
+.notesapp .topbar .wintools .yellow {
+  background: #febc2e;
+}
+.notesapp .topbar .wintools .green {
+  background: #28c840;
+}
+.notesapp .topbar .wintools div:active {
+  filter: brightness(0.85);
+}
+.notesapp .topbar .title {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  color: #4a4a4a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 76px;
+}
+.notesapp .body {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+}
+.notesapp .sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #f7f5ef;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+.notesapp .sidebar-head {
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+}
+.notesapp .sidebar-head .sidebar-label {
+  font-size: 12px;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  color: #9a9486;
+  letter-spacing: 0.3px;
+}
+.notesapp .new-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #c79a1e;
+  cursor: default;
+}
+.notesapp .new-btn:hover {
+  background: rgba(199, 154, 30, 0.14);
+}
+.notesapp .new-btn:active {
+  background: rgba(199, 154, 30, 0.26);
+}
+.notesapp .note-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 8px 12px;
+}
+.notesapp .note-item {
+  padding: 9px 12px;
+  border-radius: 8px;
+  margin-bottom: 2px;
+  cursor: default;
+}
+.notesapp .note-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+.notesapp .note-item.active {
+  background: #f3d977;
+}
+.notesapp .note-item .note-title {
+  font-size: 13px;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  color: #1d1d1f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.notesapp .note-item .note-sub {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #8a8a8a;
+}
+.notesapp .note-item .note-time {
+  flex-shrink: 0;
+  color: #1d1d1f;
+}
+.notesapp .note-item .note-preview {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #8a8a8a;
+}
+.notesapp .note-item.active .note-sub,
+.notesapp .note-item.active .note-preview,
+.notesapp .note-item.active .note-time {
+  color: #6b5d22;
+}
+.notesapp .content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #ffffff;
+  position: relative;
+}
+.notesapp .content-toolbar {
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.notesapp .content-toolbar .meta-date {
+  font-size: 11px;
+  color: #aaa;
+}
+.notesapp .content-toolbar .toolbar-spacer {
+  flex: 1;
+}
+.notesapp .delete-btn {
+  width: 28px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #c79a1e;
+  cursor: default;
+}
+.notesapp .delete-btn:hover {
+  background: rgba(199, 154, 30, 0.14);
+}
+.notesapp .delete-btn:active {
+  background: rgba(199, 154, 30, 0.26);
+}
+.notesapp .editor {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 26px 30px;
+  box-sizing: border-box;
+  outline: none;
+  font-family: "SFPro-Regular", "PingFangSC-Regular";
+  font-size: 14px;
+  line-height: 1.7;
+  color: #1d1d1f;
+  caret-color: #c79a1e;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.notesapp .editor:empty::before {
+  content: "标题\A";
+  color: #c5c5c5;
+  white-space: pre-wrap;
+}
+.notesapp .editor::selection {
+  background: rgba(243, 217, 119, 0.6);
+}
+.notesapp .empty-state {
+  position: absolute;
+  inset: 38px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  pointer-events: none;
+}
+.notesapp .empty-state .empty-title {
+  font-size: 18px;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  color: #b8b8b8;
+}
+.notesapp .empty-state .empty-sub {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #c5c5c5;
+}
+.notesapp.has-active .empty-state {
+  display: none;
+}

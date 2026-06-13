@@ -1,0 +1,29 @@
+<div class="mapsapp window" id="地图">
+    <div class="topbar">
+        <div class="wintools">
+            <div class="red"></div>
+            <div class="yellow"></div>
+            <div class="green"></div>
+        </div>
+        <p class="title">地图</p>
+    </div>
+    <div class="body">
+        <div class="map-overlay">
+            <div class="search-box">
+                <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none">
+                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                    <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <input class="search-input" type="text" placeholder="搜索地点" spellcheck="false" />
+            </div>
+            <div class="quick-places">
+                <button class="place-btn" data-lat="31.2304" data-lng="121.4737" data-zoom="12">上海</button>
+                <button class="place-btn" data-lat="39.9042" data-lng="116.4074" data-zoom="12">北京</button>
+                <button class="place-btn" data-lat="40.7128" data-lng="-74.0060" data-zoom="12">纽约</button>
+                <button class="place-btn" data-lat="35.6762" data-lng="139.6503" data-zoom="12">东京</button>
+            </div>
+            <div class="map-tip"></div>
+        </div>
+        <div id="maps-canvas"></div>
+    </div>
+</div>
