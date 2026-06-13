@@ -27,6 +27,8 @@
   height: auto;
 }
 .desktop .item p {
+  direction: ltr;
+  text-align: center;
   color: white;
   text-shadow: 1px 2px 2px rgba(0, 0, 0, 0.3333333333), 1px 1px 3px rgba(0, 0, 0, 0.3333333333);
   font-size: 13px;
