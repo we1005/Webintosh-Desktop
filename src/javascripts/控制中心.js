@@ -88,12 +88,14 @@ function readCCStyle() {
 
 // 克制的液态玻璃参数:色散收敛(几乎无彩虹边),折射强度适中,保留磨砂感。
 const CC_LIQUID_OPTS = {
-    scale: -110,           // 折射强度适中(默认 -180 偏强)
-    aberration: [0, 1, 2], // 极小色散,避免明显彩虹边
-    blur: 14,              // 边缘羽化,折射过渡柔和
+    // 对齐桌面卡片的强折射观感(liquid-glass 默认):明显光线扭曲 / 折射 / 放大镜 + 彩虹边
+    scale: -180,           // 折射强度(负=向内折射,放大镜感)
+    aberration: [0, 8, 16],// 逐通道色散,产生彩虹边
+    blur: 11,
     displaceBlur: 0,
-    saturation: 1.5,
-    tint: "rgba(28,28,32,0.28)", // 偏深的玻璃色,贴合深色面板但保留通透
+    saturation: 1.7,
+    borderRadius: 24,      // 贴合控制中心面板圆角
+    tint: "rgba(28,28,32,0.18)", // 偏深玻璃色但足够通透,让折射透出
 };
 
 function applyCCStyle(style) {
