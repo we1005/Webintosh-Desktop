@@ -65,23 +65,38 @@
 
         .sidebar-list {
             flex: 1;
-            padding: 10px;
+            padding: 8px;
             padding-top: 0;
             overflow-y: auto;
 
+            .sidebar-group {
+                margin-bottom: 14px;
+
+                &:last-child { margin-bottom: 0; }
+            }
+
             .group-title {
                 font-size: 11px;
-                color: #888;
+                color: #8a8a8e;
                 font-weight: 600;
-                margin: 10px 10px 5px;
+                letter-spacing: 0.02em;
+                margin: 8px 8px 4px;
+                user-select: none;
             }
 
             .item {
                 display: flex;
                 align-items: center;
-                padding: 6px 10px;
+                height: 28px;
+                padding: 0 8px;
                 border-radius: 6px;
-                cursor: default;
+                cursor: pointer;
+                transition: background-color 0.12s ease;
+                user-select: none;
+
+                &:hover:not(.active) {
+                    background: rgba(0, 0, 0, 0.06);
+                }
 
                 &.active {
                     background: rgba(0, 0, 0, 0.1);
@@ -90,12 +105,17 @@
                 .icon {
                     width: 16px;
                     height: 16px;
-                    margin-right: 10px;
+                    margin-right: 9px;
                     filter: opacity(0.8);
+                    pointer-events: none;
+                    object-fit: contain;
+
+                    &.drive { filter: none; }
                 }
 
                 span {
                     font-size: 13px;
+                    pointer-events: none;
                 }
             }
         }
@@ -145,12 +165,14 @@
                 align-items: center;
                 justify-content: center;
                 color: #4a4a4c;
+                cursor: pointer;
+                transition: background-color 0.12s ease, color 0.12s ease;
 
-                &:hover { background: rgba(0, 0, 0, 0.07); }
+                &:hover { background: rgba(0, 0, 0, 0.07); color: #1d1d1f; }
                 &:active { background: rgba(0, 0, 0, 0.13); }
             }
 
-            .nav-btn:disabled { color: rgba(0, 0, 0, 0.25); }
+            .nav-btn:disabled { color: rgba(0, 0, 0, 0.25); cursor: default; }
 
             .title {
                 font-weight: 600;
@@ -179,6 +201,13 @@
                     align-items: center;
                     justify-content: center;
                     color: #5a5a5c;
+                    cursor: pointer;
+                    transition: background-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+
+                    &:hover:not(.active) {
+                        background: rgba(0, 0, 0, 0.05);
+                        color: #1d1d1f;
+                    }
 
                     &.active {
                         background: #fff;
@@ -197,6 +226,12 @@
                 padding: 0 7px;
                 border-radius: 6px;
                 background: rgba(0, 0, 0, 0.06);
+                transition: box-shadow 0.15s ease, background-color 0.15s ease;
+
+                &:focus-within {
+                    background: #fff;
+                    box-shadow: 0 0 0 2.5px rgba(52, 120, 246, 0.35);
+                }
 
                 .search-input {
                     flex: 1;
@@ -206,6 +241,7 @@
                     background: transparent;
                     font-size: 12px;
                     color: #1d1d1f;
+                    cursor: text;
                 }
             }
         }
@@ -230,9 +266,16 @@
                     color: #777;
                     padding: 1px 4px;
                     border-radius: 4px;
+                    cursor: pointer;
+                    transition: background-color 0.12s ease, color 0.12s ease;
+                    user-select: none;
 
                     &:hover { background: rgba(0, 0, 0, 0.06); color: #333; }
-                    &.current { color: #1d1d1f; }
+                    &.current {
+                        color: #1d1d1f;
+                        cursor: default;
+                        &:hover { background: transparent; }
+                    }
                 }
 
                 .crumb-sep { font-size: 10px; color: #bbb; margin: 0 1px; }
@@ -254,7 +297,14 @@
                 flex-direction: column;
                 align-items: center;
                 text-align: center;
-                cursor: default;
+                cursor: pointer;
+                border-radius: 8px;
+                transition: background-color 0.12s ease;
+                user-select: none;
+
+                &:hover:not(.selected) {
+                    background: rgba(0, 0, 0, 0.05);
+                }
 
                 &.selected {
                     img {
@@ -354,6 +404,8 @@
 
                     &:nth-child(odd) { background: rgba(0, 0, 0, 0.025); }
 
+                    &:hover:not(.selected) { background: rgba(0, 0, 0, 0.06); }
+
                     &.selected {
                         background: #3478f6;
                         img { background: transparent; }
@@ -378,5 +430,36 @@
                 img { width: 96px; height: 96px; }
             }
         }
+    }
+}
+
+/* 光标覆盖:全局 cursor.css 用 `body * { cursor: url(...) !important }` 压制普通声明,
+   故访达内可点元素须用 !important + pointer.svg 强制显示手型。仅作用 .finder 作用域。 */
+.finder {
+    .left .sidebar-list .item,
+    .left .sidebar-list .item *,
+    .right .toolbar .navigation-controls .nav-btn:not(:disabled),
+    .right .toolbar .navigation-controls .nav-btn:not(:disabled) *,
+    .right .toolbar .tb-btn,
+    .right .toolbar .tb-btn *,
+    .right .toolbar .view-seg .seg-btn,
+    .right .toolbar .view-seg .seg-btn *,
+    .right .path-bar .breadcrumb .crumb:not(.current),
+    .right .main-content .file-item,
+    .right .main-content .file-item .file-label,
+    .right .main-content .file-item .file-kind,
+    .right .main-content .file-item img {
+        cursor: url(../../../cursors/pointer.svg), pointer !important;
+    }
+
+    .right .toolbar .navigation-controls .nav-btn:disabled,
+    .right .path-bar .breadcrumb .crumb.current {
+        cursor: url(../../../cursors/default.svg), default !important;
+    }
+
+    .right .toolbar .search-field .search-input,
+    .right .main-content .file-item .inline-rename,
+    .right .main-content .file-item .inline-rename .inline-rename-base {
+        cursor: text !important;
     }
 }

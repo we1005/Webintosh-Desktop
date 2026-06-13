@@ -55,23 +55,42 @@
 }
 .finder .left .sidebar-list {
   flex: 1;
-  padding: 10px;
+  padding: 8px;
   padding-top: 0;
   overflow-y: auto;
 }
+.finder .left .sidebar-list .sidebar-group {
+  margin-bottom: 14px;
+}
+.finder .left .sidebar-list .sidebar-group:last-child {
+  margin-bottom: 0;
+}
 .finder .left .sidebar-list .group-title {
   font-size: 11px;
-  color: #888;
+  color: #8a8a8e;
   font-weight: 600;
-  margin: 10px 10px 5px;
+  letter-spacing: 0.02em;
+  margin: 8px 8px 4px;
   font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
 }
 .finder .left .sidebar-list .item {
   display: flex;
   align-items: center;
-  padding: 6px 10px;
+  height: 28px;
+  padding: 0 8px;
   border-radius: 6px;
-  cursor: default;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+  will-change: background-color;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.finder .left .sidebar-list .item:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.06);
 }
 .finder .left .sidebar-list .item.active {
   background: rgba(0, 0, 0, 0.1);
@@ -79,14 +98,21 @@
 .finder .left .sidebar-list .item .icon {
   width: 16px;
   height: 16px;
-  margin-right: 10px;
+  margin-right: 9px;
   filter: opacity(0.8);
+  pointer-events: none;
+  -o-object-fit: contain;
+     object-fit: contain;
+}
+.finder .left .sidebar-list .item .icon.drive {
+  filter: none;
 }
 .finder .left .sidebar-list .item .icon.tint {
   filter: invert(42%) sepia(82%) saturate(2122%) hue-rotate(196deg) brightness(98%) contrast(96%);
 }
 .finder .left .sidebar-list .item span {
   font-size: 13px;
+  pointer-events: none;
 }
 .finder .edge {
   width: 1px;
@@ -131,12 +157,14 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  cursor: default;
+  cursor: pointer;
   color: #4a4a4c;
+  transition: background-color 0.12s ease, color 0.12s ease;
 }
 .finder .right .toolbar .navigation-controls .nav-btn:hover:not(:disabled),
 .finder .right .toolbar .tb-btn:hover {
   background: rgba(0, 0, 0, 0.07);
+  color: #1d1d1f;
 }
 .finder .right .toolbar .navigation-controls .nav-btn:active:not(:disabled),
 .finder .right .toolbar .tb-btn:active {
@@ -144,6 +172,7 @@
 }
 .finder .right .toolbar .navigation-controls .nav-btn:disabled {
   color: rgba(0, 0, 0, 0.25);
+  cursor: default;
 }
 .finder .right .toolbar .title {
   font-weight: 600;
@@ -175,10 +204,12 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  cursor: default;
+  cursor: pointer;
   color: #5a5a5c;
+  transition: background-color 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
 }
-.finder .right .toolbar .view-seg .seg-btn:hover {
+.finder .right .toolbar .view-seg .seg-btn:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.05);
   color: #1d1d1f;
 }
 .finder .right .toolbar .view-seg .seg-btn.active {
@@ -195,10 +226,17 @@
   padding: 0 7px;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0 0 0 rgba(52, 120, 246, 0);
+  transition: box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.finder .right .toolbar .search-field:focus-within {
+  background: #fff;
+  box-shadow: 0 0 0 2.5px rgba(52, 120, 246, 0.35);
 }
 .finder .right .toolbar .search-field .search-ico {
   color: #8a8a8e;
   flex-shrink: 0;
+  pointer-events: none;
 }
 .finder .right .toolbar .search-field .search-input {
   flex: 1;
@@ -208,6 +246,7 @@
   background: transparent;
   font-size: 12px;
   color: #1d1d1f;
+  cursor: text;
 }
 .finder .right .toolbar .search-field .search-input::placeholder {
   color: #9a9a9e;
@@ -233,7 +272,11 @@
   color: #777;
   padding: 1px 4px;
   border-radius: 4px;
-  cursor: default;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
 }
 .finder .right .path-bar .breadcrumb .crumb:hover {
   background: rgba(0, 0, 0, 0.06);
@@ -241,6 +284,10 @@
 }
 .finder .right .path-bar .breadcrumb .crumb.current {
   color: #1d1d1f;
+  cursor: default;
+}
+.finder .right .path-bar .breadcrumb .crumb.current:hover {
+  background: transparent;
 }
 .finder .right .path-bar .breadcrumb .crumb-sep {
   font-size: 10px;
@@ -269,7 +316,15 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  cursor: default;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.12s ease;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.finder .right .main-content .file-item:hover:not(.selected) {
+  background: rgba(0, 0, 0, 0.05);
 }
 .finder .right .main-content .file-item.selected img {
   background: rgba(0, 0, 0, 0.0666666667);
@@ -370,6 +425,10 @@
 .finder .right .main-content.view-column .file-item:nth-child(odd) {
   background: rgba(0, 0, 0, 0.025);
 }
+.finder .right .main-content.view-list .file-item:hover:not(.selected),
+.finder .right .main-content.view-column .file-item:hover:not(.selected) {
+  background: rgba(0, 0, 0, 0.06);
+}
 .finder .right .main-content.view-list .file-item.selected,
 .finder .right .main-content.view-column .file-item.selected {
   background: #3478f6;
@@ -411,4 +470,39 @@
 .finder .right .statusbar .status-text {
   font-size: 11px;
   color: #888;
+}
+
+/* ----------------------------------------------------------------------------
+   光标覆盖:全局 cursor.css 使用 `body * { cursor: url(...) default !important }`
+   会压制普通的 cursor 声明,故访达内所有可点元素必须用 `!important` + 自定义
+   pointer.svg 强制覆盖,确保 hover 时显示手型(macOS Finder 手感)。
+   仅作用于 .finder 作用域,不外泄。
+---------------------------------------------------------------------------- */
+.finder .left .sidebar-list .item,
+.finder .left .sidebar-list .item *,
+.finder .right .toolbar .navigation-controls .nav-btn:not(:disabled),
+.finder .right .toolbar .navigation-controls .nav-btn:not(:disabled) *,
+.finder .right .toolbar .tb-btn,
+.finder .right .toolbar .tb-btn *,
+.finder .right .toolbar .view-seg .seg-btn,
+.finder .right .toolbar .view-seg .seg-btn *,
+.finder .right .path-bar .breadcrumb .crumb:not(.current),
+.finder .right .main-content .file-item,
+.finder .right .main-content .file-item .file-label,
+.finder .right .main-content .file-item .file-kind,
+.finder .right .main-content .file-item img {
+  cursor: url(../../../cursors/pointer.svg), pointer !important;
+}
+/* 禁用态/当前面包屑/搜索输入 维持各自语义光标 */
+.finder .right .toolbar .navigation-controls .nav-btn:disabled,
+.finder .right .path-bar .breadcrumb .crumb.current {
+  cursor: url(../../../cursors/default.svg), default !important;
+}
+.finder .right .toolbar .search-field .search-input {
+  cursor: text !important;
+}
+/* 行内重命名输入维持文本光标 */
+.finder .right .main-content .file-item .inline-rename,
+.finder .right .main-content .file-item .inline-rename .inline-rename-base {
+  cursor: text !important;
 }
