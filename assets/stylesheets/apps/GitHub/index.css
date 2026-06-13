@@ -1,0 +1,336 @@
+/* GitHub —— 浅色 GitHub 风，纯前端模板 */
+.githubapp {
+  box-shadow: 0 36px 100px 0 rgba(0, 0, 0, 0.4), 0 0 3px 0 rgba(0, 0, 0, 0.55), inset 0 0 3px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  width: 960px;
+  height: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  position: absolute;
+  top: calc(50% - 320px);
+  left: calc(50% - 480px);
+  overflow: hidden;
+  background: #ffffff;
+  font-family: "SFPro-Regular", "PingFangSC-Regular", -apple-system, "Segoe UI", sans-serif;
+  color: #1f2328;
+}
+
+/* ---------- 红绿灯 topbar ---------- */
+.githubapp .topbar {
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  background: linear-gradient(#f6f6f6, #efefef);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.githubapp .topbar .wintools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 76px;
+  flex-shrink: 0;
+}
+.githubapp .topbar .wintools .red,
+.githubapp .topbar .wintools .yellow,
+.githubapp .topbar .wintools .green {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(0, 0, 0, 0.2);
+}
+.githubapp .topbar .wintools .red {
+  background: #ff5f57;
+}
+.githubapp .topbar .wintools .yellow {
+  background: #febc2e;
+}
+.githubapp .topbar .wintools .green {
+  background: #28c840;
+}
+.githubapp .topbar .wintools div:active {
+  filter: brightness(0.85);
+}
+.githubapp .topbar .title {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  color: #4a4a4a;
+  margin-right: 76px;
+}
+
+/* ---------- 主体 ---------- */
+.githubapp .body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+/* ---------- 个人资料头 ---------- */
+.githubapp .gh-profile {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid #d1d9e0;
+}
+.githubapp .gh-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #24292f;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+.githubapp .gh-identity {
+  min-width: 0;
+}
+.githubapp .gh-name {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  color: #1f2328;
+}
+.githubapp .gh-login {
+  margin: 2px 0 0;
+  font-size: 15px;
+  color: #59636e;
+}
+.githubapp .gh-bio {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f2328;
+  max-width: 620px;
+}
+.githubapp .gh-stats {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #59636e;
+  flex-wrap: wrap;
+}
+.githubapp .gh-stat strong {
+  color: #1f2328;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+}
+.githubapp .gh-dot {
+  color: #afb8c1;
+}
+
+/* ---------- Tabs ---------- */
+.githubapp .gh-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 28px;
+  border-bottom: 1px solid #d1d9e0;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+.githubapp .gh-tab {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: #1f2328;
+  padding: 12px 12px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.githubapp .gh-tab:hover {
+  color: #0969da;
+}
+.githubapp .gh-tab.active {
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  border-bottom-color: #fd8c73;
+}
+
+/* ---------- 内容区 ---------- */
+.githubapp .gh-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 28px 28px;
+  background: #ffffff;
+}
+.githubapp .gh-section-title {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  color: #1f2328;
+}
+.githubapp .gh-contrib-title {
+  margin-top: 28px;
+  font-weight: normal;
+  font-family: "SFPro-Regular", "PingFangSC-Regular";
+  color: #59636e;
+}
+.githubapp .gh-contrib-count {
+  color: #1f2328;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+}
+
+/* ---------- Pinned 网格 ---------- */
+.githubapp .gh-pinned {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.githubapp .gh-card {
+  border: 1px solid #d1d9e0;
+  border-radius: 6px;
+  padding: 14px 16px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.githubapp .gh-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.githubapp .gh-repo-icon {
+  color: #59636e;
+  flex-shrink: 0;
+}
+.githubapp .gh-card-name {
+  font-size: 14px;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  color: #0969da;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.githubapp .gh-card-badge {
+  margin-left: auto;
+  font-size: 11px;
+  color: #59636e;
+  border: 1px solid #d1d9e0;
+  border-radius: 2em;
+  padding: 0 7px;
+  line-height: 18px;
+}
+.githubapp .gh-card-desc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #59636e;
+  flex: 1;
+}
+.githubapp .gh-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: #59636e;
+}
+.githubapp .gh-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.githubapp .gh-lang-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.githubapp .gh-card-stars,
+.githubapp .gh-repo-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.githubapp .gh-icon {
+  color: #59636e;
+}
+
+/* ---------- 贡献热力图 ---------- */
+.githubapp .gh-heatmap {
+  border: 1px solid #d1d9e0;
+  border-radius: 6px;
+  padding: 16px;
+  background: #ffffff;
+}
+.githubapp .gh-heatmap-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 3px;
+}
+.githubapp .gh-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: #ebedf0;
+  display: inline-block;
+}
+.githubapp .gh-cell.l0 { background: #ebedf0; }
+.githubapp .gh-cell.l1 { background: #9be9a8; }
+.githubapp .gh-cell.l2 { background: #40c463; }
+.githubapp .gh-cell.l3 { background: #30a14e; }
+.githubapp .gh-cell.l4 { background: #216e39; }
+.githubapp .gh-heatmap-legend {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: 11px;
+  color: #59636e;
+}
+
+/* ---------- Repositories 列表 ---------- */
+.githubapp .gh-repolist {
+  display: flex;
+  flex-direction: column;
+}
+.githubapp .gh-repo-row {
+  padding: 18px 0;
+  border-bottom: 1px solid #d1d9e0;
+}
+.githubapp .gh-repo-row:first-child {
+  border-top: 1px solid #d1d9e0;
+}
+.githubapp .gh-repo-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.githubapp .gh-repo-name {
+  font-size: 18px;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  color: #0969da;
+}
+.githubapp .gh-repo-desc {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #59636e;
+}
+.githubapp .gh-repo-meta {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 12px;
+  color: #59636e;
+}

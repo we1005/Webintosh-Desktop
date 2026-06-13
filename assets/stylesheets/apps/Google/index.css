@@ -1,0 +1,197 @@
+.googleapp {
+  box-shadow: 0 36px 100px 0 rgba(0, 0, 0, 0.4), 0 0 3px 0 rgba(0, 0, 0, 0.55),
+    inset 0 0 3px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  width: 900px;
+  height: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  position: absolute;
+  top: calc(50% - 320px);
+  left: calc(50% - 450px);
+  overflow: hidden;
+  background: #ffffff;
+  font-family: arial, "SFPro-Regular", "PingFangSC-Regular", sans-serif;
+}
+
+.googleapp .topbar {
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  background: linear-gradient(#fdfdfd, #f3f3f3);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 2;
+}
+
+.googleapp .topbar .wintools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 76px;
+  flex-shrink: 0;
+}
+
+.googleapp .topbar .wintools .red,
+.googleapp .topbar .wintools .yellow,
+.googleapp .topbar .wintools .green {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(0, 0, 0, 0.2);
+}
+
+.googleapp .topbar .wintools .red {
+  background: #ff5f57;
+}
+
+.googleapp .topbar .wintools .yellow {
+  background: #febc2e;
+}
+
+.googleapp .topbar .wintools .green {
+  background: #28c840;
+}
+
+.googleapp .topbar .wintools div:active {
+  filter: brightness(0.85);
+}
+
+.googleapp .topbar .title {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-family: "SFPro-Semibold", "PingFangSC-Semibold";
+  color: #3a3a3a;
+  margin: 0;
+}
+
+.googleapp .body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  position: relative;
+}
+
+.googleapp .g-nav {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 18px;
+  height: 48px;
+  flex-shrink: 0;
+  padding: 0 24px;
+}
+
+.googleapp .g-nav-link {
+  font-size: 13px;
+  color: #1f1f1f;
+  text-decoration: none;
+  opacity: 0.85;
+}
+
+.googleapp .g-nav-link:hover {
+  text-decoration: underline;
+  opacity: 1;
+}
+
+.googleapp .g-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: 0 24px 80px;
+}
+
+.googleapp .g-logo {
+  width: 272px;
+  height: auto;
+  user-select: none;
+}
+
+.googleapp .g-searchbar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 560px;
+  height: 46px;
+  padding: 0 16px;
+  border: 1px solid #dfe1e5;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.googleapp .g-searchbar:hover,
+.googleapp .g-searchbar:focus-within {
+  box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
+  border-color: rgba(223, 225, 229, 0);
+}
+
+.googleapp .g-search-icon {
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.googleapp .g-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  color: #202124;
+  font-family: inherit;
+}
+
+.googleapp .g-input::placeholder {
+  color: #80868b;
+}
+
+.googleapp .g-mic-icon {
+  flex-shrink: 0;
+  margin-left: 12px;
+  cursor: pointer;
+}
+
+.googleapp .g-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.googleapp .g-btn {
+  font-family: inherit;
+  font-size: 14px;
+  color: #3c4043;
+  background: #f8f9fa;
+  border: 1px solid #f8f9fa;
+  border-radius: 4px;
+  height: 36px;
+  padding: 0 18px;
+  cursor: pointer;
+  line-height: 36px;
+  transition: border-color 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+}
+
+.googleapp .g-btn:hover {
+  border-color: #dadce0;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  background: #f8f9fa;
+  color: #202124;
+}
+
+.googleapp .g-btn:active {
+  border-color: #c6c6c6;
+  filter: brightness(0.98);
+}

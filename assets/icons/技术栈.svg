@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50px" height="50px" viewBox="0 0 50 50" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>技术栈</title>
+    <defs>
+        <linearGradient id="techGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#5B6CFF"/>
+            <stop offset="100%" stop-color="#8A5CFF"/>
+        </linearGradient>
+    </defs>
+    <g fill="none" fill-rule="evenodd">
+        <rect fill="url(#techGrad)" x="0" y="0" width="50" height="50" rx="11"/>
+        <!-- 芯片本体 -->
+        <rect fill="#FFFFFF" x="15" y="15" width="20" height="20" rx="4"/>
+        <rect fill="url(#techGrad)" x="19" y="19" width="12" height="12" rx="2"/>
+        <!-- 引脚 -->
+        <g stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round">
+            <path d="M20,15 L20,10"/>
+            <path d="M25,15 L25,10"/>
+            <path d="M30,15 L30,10"/>
+            <path d="M20,35 L20,40"/>
+            <path d="M25,35 L25,40"/>
+            <path d="M30,35 L30,40"/>
+            <path d="M15,20 L10,20"/>
+            <path d="M15,25 L10,25"/>
+            <path d="M15,30 L10,30"/>
+            <path d="M35,20 L40,20"/>
+            <path d="M35,25 L40,25"/>
+            <path d="M35,30 L40,30"/>
+        </g>
+    </g>
+</svg>

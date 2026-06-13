@@ -7,7 +7,8 @@ let apps = [
     "FaceTime通话", "信息", "地图", "查找", "Photo Booth", "照片", "音乐",
     "博客", "视频", "语音备忘录", "天气", "股市", "图书", "时钟",
     "计算器", "无边记", "家庭", "Siri", "iPhone镜像", "密码", "系统设置", "壁纸",
-    "Python 实验室", "AI 工具箱", "JupyterLite", "Typora", "复古游戏厅", "泡泡堂", "其他"
+    "Python 实验室", "AI 工具箱", "JupyterLite", "Typora", "复古游戏厅", "泡泡堂",
+    "GitHub", "LinkedIn", "历程", "技术栈", "Google", "其他"
 ];
 const launchpad = document.querySelector(".launchpad");
 const bg = launchpad.querySelector(".bg");
