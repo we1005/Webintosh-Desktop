@@ -78,6 +78,22 @@
     box-shadow: none;
 }
 
+/* 液态模式下,给每个圆角按钮/卡片补上与左侧桌面卡片(.dw-card)逐字相同的「基础玻璃层」:
+   半透明亮底 + 自有 blur + 亮边框 + 内顶高光。liquid-glass.js 的折射写在 ::after,
+   不覆盖基础层 backdrop-filter,二者叠加 = 与 .dw-card 完全一致的双层质感。 */
+#cc-panel[data-cc-style="liquid"] .cc-card,
+#cc-panel[data-cc-style="liquid"] .cc-focus,
+#cc-panel[data-cc-style="liquid"] .cc-tile,
+#cc-panel[data-cc-style="liquid"] .cc-airplay {
+    background: rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 18px;
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    backdrop-filter: blur(30px) saturate(180%);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
 /* 磨砂模式显式声明,保证从 liquid 切回时恢复默认材质 */
 #cc-panel[data-cc-style="frosted"] {
     background: rgba(28, 28, 32, 0.55);

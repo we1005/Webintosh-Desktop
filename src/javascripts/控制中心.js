@@ -87,20 +87,11 @@ function readCCStyle() {
 }
 
 // 克制的液态玻璃参数:色散收敛(几乎无彩虹边),折射强度适中,保留磨砂感。
-// 映射 archisvaze 示例参数(其引擎与本模块不同,取可对应项的近似):
-//   Refractive Index 3.0 + Scale Ratio 1.0 → scale 强折射(-180)
-//   Bezel Width 60 → border(bezel 占比 ≈ 0.18)
-//   Tint Opacity 6% → tint rgba(255,255,255,0.06)
-//   Appearance Blur 0.3(清透)→ saturation 1.5、blur 10
-//   (Glass Thickness / Specular Opacity·Saturation 本模块无对应旋钮)
+// 与左侧桌面玻璃卡片(.dw-card)逐字一致:applyLiquidGlass(el, { borderRadius:18, saturation:1.7 })
+// 其余全走 liquid-glass 默认(scale-180 / aberration[0,8,16] / blur11 / border0.07 / tint rgba(255,255,255,0.10))
 const CC_LIQUID_OPTS = {
     borderRadius: 18,
-    scale: -180,
-    aberration: [0, 8, 16],
-    border: 0.18,
-    blur: 10,
-    saturation: 1.5,
-    tint: "rgba(255,255,255,0.06)",
+    saturation: 1.7,
 };
 
 // 液态玻璃只作用在这些圆角"按钮/卡片"上(不是整块面板);空隙保持透明形成反差
