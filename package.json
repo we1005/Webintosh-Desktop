@@ -1,0 +1,16 @@
+{
+  "name": "webintosh-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "macOS Sequoia 网页克隆（纯静态站点）。本地推荐用 `python3 -m http.server 8765` 运行；此 package.json 仅用于 StackBlitz / Node 环境下的静态托管（让 `stackblitz.com/github/...` 能识别并启动本仓库）。",
+  "scripts": {
+    "start": "serve . -l 8765",
+    "dev": "serve . -l 8765"
+  },
+  "dependencies": {
+    "serve": "^14.2.4"
+  },
+  "stackblitz": {
+    "startCommand": "npm start"
+  }
+}

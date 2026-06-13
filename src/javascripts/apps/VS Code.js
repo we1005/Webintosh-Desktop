@@ -1,12 +1,14 @@
-// VS Code —— 源级移植 thanas-os TechnologiesApp.tsx（原生 JS）
-// 全屏 iframe 内嵌 github1s（VS Code 网页版）+ loading spinner +
-// 6s 内未触发 onLoad / 被 CSP/X-Frame 拦截时显示兜底 CTA（在新标签打开）。
+// VS Code —— 全屏 iframe 内嵌 StackBlitz Web 编辑器（VS Code 同款 Monaco 内核 UI），
+// 直接打开本项目仓库 we1005/Webintosh-Desktop（在 OS 里看 OS 自己的源码）。
+// 说明：原先用的 github1s.com 已废弃（iframe 能加载但编辑器永远卡 loading），
+// 改用 StackBlitz embed（实测无 X-Frame-Options，可嵌套且能真正打开/运行 GitHub 仓库）。
+// 15s 内未触发 onLoad / 被 CSP/X-Frame 拦截时显示兜底 CTA（在新标签打开）。
 (() => {
     const win = document.getElementById("VS Code") || document.querySelector(".vscodeapp.window");
     if (!win || win.dataset.bound === "1") return;
     win.dataset.bound = "1";
 
-    const EDITOR_SRC = "https://github1s.com/microsoft/vscode";
+    const EDITOR_SRC = "https://stackblitz.com/github/we1005/Webintosh-Desktop?embed=1&view=editor&theme=dark&file=index.html";
 
     /* ---------- 生命周期：窗口移除时清理 ---------- */
     const ac = new AbortController();
@@ -42,13 +44,13 @@
         syncView();
     });
 
-    // 6s 内仍未加载完成 → 视为被宿主拦截，显示兜底
+    // 15s 内仍未加载完成 → 视为被宿主拦截，显示兜底（StackBlitz 克隆仓库较慢，留足时间）
     timer = setTimeout(() => {
         if (loading) {
             blocked = true;
             syncView();
         }
-    }, 6000);
+    }, 15000);
 
     // 兜底 CTA：在新标签打开同一 URL
     on(openBtn, "click", () => {
