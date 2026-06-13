@@ -63,6 +63,23 @@
     pointer-events: auto;
 }
 
+/* ---------------- 液态玻璃风格适配 ----------------
+   液态玻璃靠折射成像,底色过实会盖住折射效果。
+   故在 liquid 模式下把面板自有背景降到很低的不透明度,
+   并让 backdrop-filter 交给 liquid-glass.js 注入的 SVG 折射滤镜
+   (它会写 inline backdrop-filter,优先于此处规则)。 */
+#cc-panel[data-cc-style="liquid"] {
+    background: rgba(28, 28, 32, 0.18);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* 磨砂模式显式声明,保证从 liquid 切回时恢复默认材质 */
+#cc-panel[data-cc-style="frosted"] {
+    background: rgba(28, 28, 32, 0.55);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    backdrop-filter: blur(40px) saturate(180%);
+}
+
 #cc-panel *,
 #cc-panel *::before,
 #cc-panel *::after {

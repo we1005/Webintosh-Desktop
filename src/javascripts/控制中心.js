@@ -13,9 +13,13 @@
      监听 'webintosh-volume' 在外部改变时同步自身 Sound 滑块。
    ======================================================================== */
 
+import { applyLiquidGlass, removeLiquidGlass } from "./liquid-glass.js";
+
 const CSS_HREF = "./assets/stylesheets/控制中心/index.css";
 const HTML_SRC = "./assets/apps/控制中心.html";
 const VOLUME_EVENT = "webintosh-volume";
+const CC_STYLE_EVENT = "webintosh-cc-style";
+const CC_STYLE_KEY = "webintosh.cc.style";
 
 let panelEl = null;       // #cc-panel
 let dimEl = null;         // #cc-brightness-dim
@@ -66,11 +70,43 @@ async function ensurePanel() {
         document.body.appendChild(node);
         panelEl = node;
         wirePanel(panelEl);
-        // 材质完全由 控制中心/index.css 的 backdrop-filter: blur()+saturate() 提供。
+        // 默认材质由 控制中心/index.css 的 backdrop-filter: blur()+saturate() 提供;
+        // 液态玻璃风格则由 applyCCStyle('liquid') 叠加 SVG 折射滤镜。
+        applyCCStyle(readCCStyle());
     } finally {
         injecting = false;
     }
     return panelEl;
+}
+
+/* ---------------- 控制中心 外观风格(磨砂 / 液态玻璃) ---------------- */
+
+function readCCStyle() {
+    const s = localStorage.getItem(CC_STYLE_KEY);
+    return s === "liquid" ? "liquid" : "frosted";
+}
+
+// 克制的液态玻璃参数:色散收敛(几乎无彩虹边),折射强度适中,保留磨砂感。
+const CC_LIQUID_OPTS = {
+    scale: -110,           // 折射强度适中(默认 -180 偏强)
+    aberration: [0, 1, 2], // 极小色散,避免明显彩虹边
+    blur: 14,              // 边缘羽化,折射过渡柔和
+    displaceBlur: 0,
+    saturation: 1.5,
+    tint: "rgba(28,28,32,0.28)", // 偏深的玻璃色,贴合深色面板但保留通透
+};
+
+function applyCCStyle(style) {
+    if (!panelEl) return;
+    const next = style === "liquid" ? "liquid" : "frosted";
+
+    if (next === "liquid") {
+        panelEl.setAttribute("data-cc-style", "liquid");
+        applyLiquidGlass(panelEl, CC_LIQUID_OPTS);
+    } else {
+        removeLiquidGlass(panelEl);
+        panelEl.setAttribute("data-cc-style", "frosted");
+    }
 }
 
 /* ---------------- 定位 ---------------- */
@@ -253,6 +289,15 @@ document.addEventListener(VOLUME_EVENT, (e) => {
     applyingExternalVol = true;
     setSliderValue(volumeSliderEl, window.__systemVolume);
     applyingExternalVol = false;
+});
+
+/* ---------------- 控制中心 外观风格事件:实时切换(面板已打开时立即变) ---------------- */
+document.addEventListener(CC_STYLE_EVENT, (e) => {
+    const style = e.detail === "liquid" ? "liquid" : "frosted";
+    // 面板尚未注入时无需处理;下次注入会从 localStorage 读取并应用。
+    if (panelEl && document.body.contains(panelEl)) {
+        applyCCStyle(style);
+    }
 });
 
 /* ---------------- 对外接口 ---------------- */

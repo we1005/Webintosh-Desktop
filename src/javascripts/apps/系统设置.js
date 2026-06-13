@@ -76,3 +76,42 @@ if (dockZoomSwitch) {
 
     observer.observe(dockZoomSwitch, { attributes: true });
 }
+
+/* ---------------- 控制中心 外观风格切换 ---------------- */
+const CC_STYLE_KEY = "webintosh.cc.style";
+const ccStyleCards = window_settings
+    ? window_settings.querySelectorAll(".cc-style-card[data-cc-style-value]")
+    : document.querySelectorAll(".cc-style-card[data-cc-style-value]");
+
+if (ccStyleCards.length) {
+    let currentCcStyle = localStorage.getItem(CC_STYLE_KEY) || "frosted";
+    if (currentCcStyle !== "frosted" && currentCcStyle !== "liquid") {
+        currentCcStyle = "frosted";
+    }
+
+    const highlightCcStyle = (style) => {
+        ccStyleCards.forEach((card) => {
+            card.classList.toggle(
+                "cc-style-selected",
+                card.getAttribute("data-cc-style-value") === style
+            );
+        });
+    };
+
+    // 页面打开时高亮当前选项
+    highlightCcStyle(currentCcStyle);
+
+    ccStyleCards.forEach((card) => {
+        card.addEventListener("click", () => {
+            const style = card.getAttribute("data-cc-style-value");
+            if (style !== "frosted" && style !== "liquid") return;
+            if (style === currentCcStyle) return;
+            currentCcStyle = style;
+            localStorage.setItem(CC_STYLE_KEY, style);
+            highlightCcStyle(style);
+            document.dispatchEvent(
+                new CustomEvent("webintosh-cc-style", { detail: style })
+            );
+        });
+    });
+}
