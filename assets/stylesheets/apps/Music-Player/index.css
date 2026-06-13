@@ -71,7 +71,7 @@
     background: #f6f6f6;
     border-right: 1px solid rgba(0, 0, 0, 0.10);
     overflow-y: auto;
-    padding: 0 10px 14px;
+    padding: 14px 10px;
 }
 .musicplayer2app .m2-brand {
     text-align: right;
@@ -578,6 +578,8 @@
     height: 34px;
     background: rgba(0, 0, 0, 0.05);
 }
+/* 播放/暂停图标互斥:hidden 的 svg 不显示(SVGElement 需属性选择器保险) */
+.musicplayer2app .m2-play svg[hidden] { display: none; }
 
 .musicplayer2app .m2-progress {
     display: flex;

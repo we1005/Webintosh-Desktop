@@ -562,8 +562,10 @@
     }
     function renderPlayIcon() {
         const playing = !audio.paused && currentIndex >= 0;
-        iconPlay.hidden = playing;
-        iconPause.hidden = !playing;
+        // iconPlay/iconPause 是 <svg>(SVGElement),.hidden 属性不反射到内容属性,
+        // 必须用 toggleAttribute 才能命中 [hidden]{display:none}(否则播放/暂停图标同时显示)。
+        iconPlay.toggleAttribute("hidden", playing);
+        iconPause.toggleAttribute("hidden", !playing);
         playBtn.setAttribute("aria-label", playing ? "暂停" : "播放");
     }
 
