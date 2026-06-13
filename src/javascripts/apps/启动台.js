@@ -6,7 +6,7 @@ let apps = [
     "App Store", "Safari浏览器", "邮件", "通讯录", "日历", "提醒事项", "备忘录",
     "FaceTime通话", "信息", "地图", "查找", "Photo Booth", "照片", "音乐",
     "博客", "视频", "语音备忘录", "天气", "股市", "图书", "时钟",
-    "计算器", "无边记", "家庭", "Siri", "iPhone镜像", "密码", "系统设置",
+    "计算器", "无边记", "家庭", "Siri", "iPhone镜像", "密码", "系统设置", "壁纸",
     "Python 实验室", "AI 工具箱", "JupyterLite", "Typora", "复古游戏厅", "泡泡堂", "其他"
 ];
 const launchpad = document.querySelector(".launchpad");

@@ -16,6 +16,7 @@ export let appMenu = {
     "JupyterLite": ["文件", "编辑", "运行", "内核", "窗口", "帮助"],
     "复古游戏厅": ["游戏", "显示", "窗口", "帮助"],
     "Typora": ["文件", "编辑", "格式", "显示", "窗口", "帮助"],
+    "壁纸": ["文件", "显示", "窗口", "帮助"],
 };
 let appControl = [
     "switch.2", "magnifyingglass", "wifi"
