@@ -19,6 +19,8 @@
  * cards force direction: ltr (also enforced inline as a safety net).
  */
 
+import { applyLiquidGlass } from "./liquid-glass.js";
+
 const WIDGETS_ID = "desktop-widgets";
 const STYLE_ID = "desktop-widgets-style";
 
@@ -219,6 +221,10 @@ export function initDesktopWidgets() {
     container.appendChild(buildStatsCard());
 
     resolveHost().appendChild(container);
+    // 液态玻璃质感(Chromium 折射;Safari/Firefox 降级模糊)
+    container.querySelectorAll(".dw-card").forEach(card => {
+        try { applyLiquidGlass(card, { borderRadius: 18, saturation: 1.7 }); } catch (e) { }
+    });
     return container;
 }
 
