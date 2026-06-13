@@ -636,13 +636,24 @@
     /* ===================================================================
      * audio 事件
      * =================================================================== */
+    // 原生 range「已填充」着色(macOS 风:左侧红色填充 + 右侧浅灰轨),用内联渐变实现
+    const RANGE_TRACK = "rgba(0,0,0,0.15)";
+    function paintRange(el, fill) {
+        if (!el) return;
+        const min = parseFloat(el.min) || 0, max = parseFloat(el.max) || 100;
+        const pct = max > min ? ((parseFloat(el.value) - min) / (max - min)) * 100 : 0;
+        el.style.background = `linear-gradient(to right, ${fill} ${pct}%, ${RANGE_TRACK} ${pct}%)`;
+    }
+    paintRange(volSlider, "#fa2d48");
+    paintRange(seek, "#fa2d48");
+
     let seeking = false;
     on(audio, "loadedmetadata", () => {
         durTimeEl.textContent = fmtTime(isFinite(audio.duration) ? audio.duration : 30);
     });
     on(audio, "timeupdate", () => {
         const dur = isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 30;
-        if (!seeking) seek.value = String(Math.round((audio.currentTime / dur) * 1000));
+        if (!seeking) { seek.value = String(Math.round((audio.currentTime / dur) * 1000)); paintRange(seek, "#fa2d48"); }
         curTimeEl.textContent = fmtTime(audio.currentTime);
     });
     on(audio, "ended", () => step(1));
@@ -697,16 +708,18 @@
     on(nextBtn, "click", () => step(1));
 
     // 进度条 seek
-    on(seek, "input", () => { seeking = true; });
+    on(seek, "input", () => { seeking = true; paintRange(seek, "#fa2d48"); });
     on(seek, "change", () => {
         const dur = isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 30;
         audio.currentTime = (parseInt(seek.value, 10) / 1000) * dur;
+        paintRange(seek, "#fa2d48");
         seeking = false;
     });
 
     // 音量
     on(volSlider, "input", () => {
         audio.volume = Math.max(0, Math.min(1, parseInt(volSlider.value, 10) / 100));
+        paintRange(volSlider, "#fa2d48");
     });
 
     /* ===================================================================

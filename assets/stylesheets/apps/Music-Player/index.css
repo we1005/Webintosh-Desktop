@@ -612,19 +612,23 @@
 .musicplayer2app .m2-vol::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     border-radius: 50%;
-    background: #fa2d48;
+    background: #ffffff;
+    border: 0.5px solid rgba(0, 0, 0, 0.18);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    margin-top: -4.5px;   /* 在 4px 轨道上垂直居中 (13-4)/2 */
     cursor: pointer;
 }
 .musicplayer2app .m2-seek::-moz-range-thumb,
 .musicplayer2app .m2-vol::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-    border: none;
+    width: 13px;
+    height: 13px;
+    border: 0.5px solid rgba(0, 0, 0, 0.18);
     border-radius: 50%;
-    background: #fa2d48;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     cursor: pointer;
 }
 
