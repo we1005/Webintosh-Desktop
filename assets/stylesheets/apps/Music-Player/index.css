@@ -1,0 +1,674 @@
+/* Music-Player —— 源码级移植 thanas-os 的 Apple Music App（原生实现，独立窗口）。
+ * 所有选择器以 .musicplayer2app 作用域前缀（本项目 CSS 全局共享，禁止裸选择器）。 */
+
+.musicplayer2app.window {
+    width: min(1040px, calc(100vw - 90px));
+    height: min(660px, calc(100vh - 140px));
+    top: calc(50% - min(330px, (100vh - 140px) / 2));
+    left: calc(50% - min(520px, (100vw - 90px) / 2));
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+    color: #1c1c1e;
+    font-family: 'SFPro-Regular', 'PingFangSC-Regular', -apple-system, 'SF Pro Text', sans-serif;
+}
+
+/* ---------- 标题栏（红绿灯） ---------- */
+.musicplayer2app .topbar {
+    flex: none;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    background: #ececef;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.musicplayer2app .topbar .wintools {
+    display: inline-flex;
+    margin-left: 10px;
+    z-index: 2;
+}
+.musicplayer2app .topbar .wintools .red,
+.musicplayer2app .topbar .wintools .yellow,
+.musicplayer2app .topbar .wintools .green {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: solid 0.5px rgba(0, 0, 0, 0.2);
+}
+.musicplayer2app .topbar .wintools .red { background: #ff5f57; }
+.musicplayer2app .topbar .wintools .yellow { background: #febc2e; }
+.musicplayer2app .topbar .wintools .green { background: #28c840; }
+.musicplayer2app .topbar .title {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b4b4f;
+    pointer-events: none;
+}
+
+/* ---------- 主体布局 ---------- */
+.musicplayer2app .m2-body {
+    flex: 1 1 auto;
+    display: flex;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ---------- 侧栏 ---------- */
+.musicplayer2app .m2-sidebar {
+    flex: none;
+    width: 220px;
+    box-sizing: border-box;
+    background: #f6f6f6;
+    border-right: 1px solid rgba(0, 0, 0, 0.10);
+    overflow-y: auto;
+    padding: 0 10px 14px;
+}
+.musicplayer2app .m2-brand {
+    text-align: right;
+    padding: 12px 8px 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fa2d48;
+}
+.musicplayer2app .m2-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 10px;
+    margin: 0 2px 12px;
+    border-radius: 7px;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: #737378;
+}
+.musicplayer2app .m2-search-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 12px;
+    color: #1c1c1e;
+    font-family: inherit;
+}
+.musicplayer2app .m2-search-input::placeholder { color: #9a9aa0; }
+.musicplayer2app .m2-search-input::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+.musicplayer2app .m2-side-section { margin-top: 4px; }
+.musicplayer2app .m2-side-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #8a8a8f;
+    padding: 12px 8px 6px;
+}
+.musicplayer2app .m2-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.musicplayer2app .m2-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: #1c1c1e;
+    cursor: pointer;
+    user-select: none;
+}
+.musicplayer2app .m2-nav-item svg { color: #fa2d48; flex: none; }
+.musicplayer2app .m2-nav-item:hover { background: rgba(0, 0, 0, 0.05); }
+.musicplayer2app .m2-nav-item.active {
+    background: #e6e6e6;
+    font-weight: 600;
+}
+
+/* ---------- 主区 ---------- */
+.musicplayer2app .m2-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: #ffffff;
+    overflow: hidden;
+    display: flex;
+}
+.musicplayer2app .m2-main-scroll {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    padding: 28px 28px 28px;
+}
+
+.musicplayer2app .m2-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+.musicplayer2app .m2-h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.15;
+}
+.musicplayer2app .m2-sub {
+    font-size: 12px;
+    color: #737378;
+    margin-top: 4px;
+}
+.musicplayer2app .m2-play-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 999px;
+    background: #fa2d48;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    flex: none;
+}
+.musicplayer2app .m2-play-pill:hover { background: #e62740; }
+
+.musicplayer2app .m2-section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 16px 0 12px;
+}
+.musicplayer2app .m2-rule {
+    flex: 1;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.10);
+}
+
+/* ---------- 通用封面占位 ---------- */
+.musicplayer2app .m2-cover-fallback {
+    background: linear-gradient(135deg, #ff8a7a, #fa2d48);
+}
+
+/* ---------- 网格（AlbumGrid） ---------- */
+.musicplayer2app .m2-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+.musicplayer2app .m2-card {
+    border: none;
+    background: transparent;
+    padding: 0;
+    text-align: left;
+    cursor: pointer;
+    min-width: 0;
+    font-family: inherit;
+}
+.musicplayer2app .m2-card-art {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.musicplayer2app .m2-card-art.active { border-color: #fa2d48; }
+.musicplayer2app .m2-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.2s ease;
+}
+.musicplayer2app .m2-card:hover .m2-card-img { transform: scale(1.03); }
+.musicplayer2app .m2-card-cat {
+    margin-top: 6px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8a8a8f;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.musicplayer2app .m2-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.musicplayer2app .m2-card-title.playing { color: #fa2d48; }
+.musicplayer2app .m2-card-artist {
+    font-size: 12px;
+    color: #737378;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---------- 横向列表（HorizontalTrackList） ---------- */
+.musicplayer2app .m2-hgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+}
+.musicplayer2app .m2-htile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 64px;
+    padding: 8px;
+    border-radius: 9px;
+    background: rgba(0, 0, 0, 0.035);
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    min-width: 0;
+}
+.musicplayer2app .m2-htile.active { border-color: #fa2d48; }
+.musicplayer2app .m2-htile:hover { background: rgba(0, 0, 0, 0.06); }
+.musicplayer2app .m2-htile-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex: none;
+    display: block;
+}
+.musicplayer2app .m2-htile-meta { min-width: 0; flex: 1; }
+.musicplayer2app .m2-htile-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.musicplayer2app .m2-htile-title.playing { color: #fa2d48; }
+.musicplayer2app .m2-htile-artist {
+    font-size: 11.5px;
+    color: #737378;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---------- 歌曲表格（SongTable） ---------- */
+.musicplayer2app .m2-table {
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.025);
+    margin-bottom: 24px;
+}
+.musicplayer2app .m2-row {
+    width: 100%;
+    box-sizing: border-box;
+    height: 54px;
+    padding: 0 12px;
+    display: grid;
+    grid-template-columns: 34px 44px 1.4fr 1fr 70px;
+    align-items: center;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: transparent;
+    text-align: left;
+    color: #1c1c1e;
+    cursor: pointer;
+    font-family: inherit;
+}
+.musicplayer2app .m2-row:last-child { border-bottom: none; }
+.musicplayer2app .m2-row:hover { background: rgba(0, 0, 0, 0.04); }
+.musicplayer2app .m2-row.playing { background: rgba(250, 45, 72, 0.06); }
+.musicplayer2app .m2-row-idx {
+    font-size: 12px;
+    color: #8a8a8f;
+}
+.musicplayer2app .m2-row.playing .m2-row-idx { color: #fa2d48; }
+.musicplayer2app .m2-row-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 5px;
+    object-fit: cover;
+    display: block;
+}
+.musicplayer2app .m2-row-info { min-width: 0; padding: 0 12px; }
+.musicplayer2app .m2-row-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.musicplayer2app .m2-row-title.playing { color: #fa2d48; }
+.musicplayer2app .m2-row-artist {
+    font-size: 11px;
+    color: #737378;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.musicplayer2app .m2-row-album {
+    font-size: 11.5px;
+    color: #737378;
+    padding-right: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.musicplayer2app .m2-row-dur {
+    font-size: 11px;
+    color: #8a8a8f;
+    justify-self: end;
+}
+.musicplayer2app .m2-empty {
+    height: 112px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #737378;
+}
+
+/* ---------- 艺人（圆形分组） ---------- */
+.musicplayer2app .m2-people {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.musicplayer2app .m2-person {
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: center;
+}
+.musicplayer2app .m2-person-art {
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.musicplayer2app .m2-person-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.musicplayer2app .m2-person-name {
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.musicplayer2app .m2-person-count {
+    font-size: 11px;
+    color: #737378;
+}
+
+/* ---------- 专辑（方形分组） ---------- */
+.musicplayer2app .m2-albums {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.musicplayer2app .m2-album {
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    min-width: 0;
+}
+.musicplayer2app .m2-album-art {
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.musicplayer2app .m2-album-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.musicplayer2app .m2-album-title {
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.musicplayer2app .m2-album-meta {
+    font-size: 11px;
+    color: #737378;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---------- 分类歌单 Hero ---------- */
+.musicplayer2app .m2-playlist-hero {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    margin-bottom: 22px;
+}
+.musicplayer2app .m2-playlist-cover { flex: none; }
+.musicplayer2app .m2-playlist-img {
+    width: 140px;
+    height: 140px;
+    border-radius: 10px;
+    object-fit: cover;
+    display: block;
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+.musicplayer2app .m2-playlist-info { padding-bottom: 6px; }
+.musicplayer2app .m2-playlist-kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #737378;
+}
+.musicplayer2app .m2-playlist-info .m2-play-pill { margin-top: 12px; height: 32px; }
+
+/* ---------- 底部播放栏 ---------- */
+.musicplayer2app .m2-playbar {
+    flex: none;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 16px;
+    background: #f6f6f6;
+    border-top: 1px solid rgba(0, 0, 0, 0.10);
+}
+.musicplayer2app .m2-now {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 220px;
+    flex: none;
+    min-width: 0;
+}
+.musicplayer2app .m2-now-cover {
+    width: 42px;
+    height: 42px;
+    border-radius: 6px;
+    flex: none;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(0, 0, 0, 0.10);
+}
+.musicplayer2app .m2-now-meta { min-width: 0; }
+.musicplayer2app .m2-now-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.musicplayer2app .m2-now-artist {
+    font-size: 11px;
+    color: #737378;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.musicplayer2app .m2-center {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+.musicplayer2app .m2-controls {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+.musicplayer2app .m2-btn {
+    border: none;
+    background: transparent;
+    color: #1c1c1e;
+    cursor: pointer;
+    padding: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+.musicplayer2app .m2-btn:hover { color: #fa2d48; }
+.musicplayer2app .m2-play {
+    width: 34px;
+    height: 34px;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.musicplayer2app .m2-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 460px;
+}
+.musicplayer2app .m2-time {
+    font-size: 10.5px;
+    color: #8a8a8f;
+    width: 30px;
+    flex: none;
+    font-variant-numeric: tabular-nums;
+}
+.musicplayer2app .m2-time-dur { text-align: right; }
+
+.musicplayer2app .m2-seek,
+.musicplayer2app .m2-vol {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.15);
+    outline: none;
+    cursor: pointer;
+}
+.musicplayer2app .m2-seek { flex: 1; min-width: 0; }
+.musicplayer2app .m2-seek::-webkit-slider-thumb,
+.musicplayer2app .m2-vol::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fa2d48;
+    cursor: pointer;
+}
+.musicplayer2app .m2-seek::-moz-range-thumb,
+.musicplayer2app .m2-vol::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 50%;
+    background: #fa2d48;
+    cursor: pointer;
+}
+
+.musicplayer2app .m2-volume {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 140px;
+    flex: none;
+    color: #737378;
+}
+.musicplayer2app .m2-vol { flex: 1; min-width: 0; }
+
+/* ---------- Toast 提示 ---------- */
+.musicplayer2app .m2-toast {
+    position: absolute;
+    left: 50%;
+    bottom: 80px;
+    transform: translateX(-50%) translateY(8px);
+    background: rgba(0, 0, 0, 0.82);
+    color: #fff;
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 10;
+    white-space: nowrap;
+}
+.musicplayer2app .m2-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- 滚动条 ---------- */
+.musicplayer2app .m2-sidebar::-webkit-scrollbar,
+.musicplayer2app .m2-main-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+.musicplayer2app .m2-sidebar::-webkit-scrollbar-thumb,
+.musicplayer2app .m2-main-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 4px;
+}
+.musicplayer2app .m2-sidebar::-webkit-scrollbar-track,
+.musicplayer2app .m2-main-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
