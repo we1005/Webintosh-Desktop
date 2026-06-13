@@ -1,0 +1,163 @@
+/* VS Code —— 源级移植 thanas-os TechnologiesApp.tsx
+   全屏 iframe(github1s) + loading spinner + 被拦截兜底 CTA。配色用 VS Code 深色 #1e1e1e。 */
+
+.vscodeapp.window {
+    width: min(1000px, calc(100vw - 90px));
+    height: min(680px, calc(100vh - 140px));
+    top: calc(50% - min(680px, calc(100vh - 140px)) / 2);
+    left: calc(50% - min(1000px, calc(100vw - 90px)) / 2);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #1e1e1e;
+}
+
+.vscodeapp .topbar {
+    flex: none;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    background: #1f1f23;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.vscodeapp .topbar .wintools {
+    display: inline-flex;
+    margin-left: 10px;
+    z-index: 2;
+}
+
+.vscodeapp .topbar .wintools .red,
+.vscodeapp .topbar .wintools .yellow,
+.vscodeapp .topbar .wintools .green {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: solid 0.5px rgba(0, 0, 0, 0.25);
+}
+
+.vscodeapp .topbar .wintools .red { background: #ff5f57; }
+.vscodeapp .topbar .wintools .yellow { background: #febc2e; }
+.vscodeapp .topbar .wintools .green { background: #28c840; margin-right: 0; }
+
+.vscodeapp .topbar .title {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.72);
+    font-family: 'SFPro-Semibold', 'PingFangSC-Semibold';
+    pointer-events: none;
+}
+
+.vscodeapp .body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    background: #1e1e1e;
+}
+
+.vscodeapp .vscode-stage {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+    background: #1e1e1e;
+}
+
+.vscodeapp .vscode-frame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    background: #1e1e1e;
+}
+
+/* loading 态 */
+.vscodeapp .vscode-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: #1e1e1e;
+    z-index: 10;
+}
+
+.vscodeapp .vscode-loading[hidden] { display: none; }
+
+.vscodeapp .vscode-spinner {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid rgba(55, 148, 255, 0.25);
+    border-top-color: #3794ff;
+    animation: vscode-spin 0.8s linear infinite;
+}
+
+@keyframes vscode-spin {
+    to { transform: rotate(360deg); }
+}
+
+.vscodeapp .vscode-loading-text {
+    font-size: 12px;
+    color: #a3a3a3;
+    font-family: -apple-system, 'SFPro-Regular', 'PingFangSC-Regular', sans-serif;
+}
+
+/* 被拦截兜底 */
+.vscodeapp .vscode-blocked {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+    padding: 0 24px;
+    background: #1e1e1e;
+    z-index: 11;
+}
+
+.vscodeapp .vscode-blocked[hidden] { display: none; }
+
+.vscodeapp .vscode-blocked-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e5e5e5;
+    font-family: 'SFPro-Semibold', -apple-system, 'PingFangSC-Semibold', sans-serif;
+}
+
+.vscodeapp .vscode-blocked-desc {
+    font-size: 12.5px;
+    color: #a3a3a3;
+    max-width: 28rem;
+    line-height: 1.5;
+    font-family: -apple-system, 'SFPro-Regular', 'PingFangSC-Regular', sans-serif;
+}
+
+.vscodeapp .vscode-open-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background: #0e639c;
+    color: #ffffff;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: -apple-system, 'SFPro-Regular', 'PingFangSC-Regular', sans-serif;
+    transition: background 0.12s ease;
+}
+
+.vscodeapp .vscode-open-btn:hover { background: #1177bb; }
+
+.vscodeapp .vscode-open-btn svg { display: block; }

@@ -1,0 +1,78 @@
+<div class="calculatorapp window" id="Calculator">
+    <div class="topbar">
+        <div class="wintools">
+            <div class="red"></div>
+            <div class="yellow"></div>
+            <div class="green"></div>
+        </div>
+        <p class="title">计算器</p>
+    </div>
+    <div class="body">
+        <div class="calc-display">
+            <div class="calc-result" id="calc-result">0</div>
+        </div>
+        <div class="calc-keypad">
+            <button type="button" class="calc-key util" data-action="backspace" aria-label="Backspace">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 4H8L1 12l7 8h13a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1Z"/>
+                    <path d="M16 9l-6 6M10 9l6 6"/>
+                </svg>
+            </button>
+            <button type="button" class="calc-key util" data-action="clear" aria-label="Clear">
+                <span class="calc-glyph">AC</span>
+            </button>
+            <button type="button" class="calc-key util" data-action="percent" aria-label="Percent">
+                <span class="calc-glyph">%</span>
+            </button>
+            <button type="button" class="calc-key op" data-op="/" aria-label="Divide">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                    <path d="M5 12h14"/>
+                    <circle cx="12" cy="6.5" r="1.4" fill="currentColor" stroke="none"/>
+                    <circle cx="12" cy="17.5" r="1.4" fill="currentColor" stroke="none"/>
+                </svg>
+            </button>
+
+            <button type="button" class="calc-key digit" data-digit="7">7</button>
+            <button type="button" class="calc-key digit" data-digit="8">8</button>
+            <button type="button" class="calc-key digit" data-digit="9">9</button>
+            <button type="button" class="calc-key op" data-op="*" aria-label="Multiply">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6L6 18"/>
+                </svg>
+            </button>
+
+            <button type="button" class="calc-key digit" data-digit="4">4</button>
+            <button type="button" class="calc-key digit" data-digit="5">5</button>
+            <button type="button" class="calc-key digit" data-digit="6">6</button>
+            <button type="button" class="calc-key op" data-op="-" aria-label="Minus">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                    <path d="M5 12h14"/>
+                </svg>
+            </button>
+
+            <button type="button" class="calc-key digit" data-digit="1">1</button>
+            <button type="button" class="calc-key digit" data-digit="2">2</button>
+            <button type="button" class="calc-key digit" data-digit="3">3</button>
+            <button type="button" class="calc-key op" data-op="+" aria-label="Plus">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+            </button>
+
+            <button type="button" class="calc-key util" data-action="sign" aria-label="Toggle sign">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 8h6M7 5v6"/>
+                    <path d="M14 17h6"/>
+                    <path d="M6 19L18 5"/>
+                </svg>
+            </button>
+            <button type="button" class="calc-key digit" data-digit="0">0</button>
+            <button type="button" class="calc-key digit" data-action="decimal">.</button>
+            <button type="button" class="calc-key op" data-action="equals" aria-label="Equals">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                    <path d="M5 9h14M5 15h14"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>

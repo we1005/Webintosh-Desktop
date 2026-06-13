@@ -1,0 +1,41 @@
+<div class="vscodeapp window" id="VS Code">
+    <div class="topbar">
+        <div class="wintools">
+            <div class="red"></div>
+            <div class="yellow"></div>
+            <div class="green"></div>
+        </div>
+        <p class="title">VS Code</p>
+    </div>
+    <div class="body">
+        <div class="vscode-stage">
+            <div class="vscode-loading" data-state="loading">
+                <div class="vscode-spinner" aria-hidden="true"></div>
+                <div class="vscode-loading-text">Loading workspace…</div>
+            </div>
+
+            <div class="vscode-blocked" data-state="blocked" hidden>
+                <div class="vscode-blocked-title">Editor blocked from embedding</div>
+                <div class="vscode-blocked-desc">
+                    Your browser prevented the workspace from loading inside this window.
+                    Open it in a new tab to continue.
+                </div>
+                <button type="button" class="vscode-open-btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M14 4h6v6"/>
+                        <path d="M10 14L20 4"/>
+                        <path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"/>
+                    </svg>
+                    <span>Open Workspace</span>
+                </button>
+            </div>
+
+            <iframe
+                class="vscode-frame"
+                src="https://github1s.com/microsoft/vscode"
+                title="Workspace"
+                referrerpolicy="no-referrer"
+                allow="clipboard-read; clipboard-write"></iframe>
+        </div>
+    </div>
+</div>

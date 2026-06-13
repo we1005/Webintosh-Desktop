@@ -79,12 +79,12 @@
   opacity: 0.8;
 }
 
-.wintools {
+.about_this_mac .wintools {
   display: inline-flex;
   margin: 8px;
   align-self: flex-start;
 }
-.wintools .red {
+.about_this_mac .wintools .red {
   width: 12px;
   height: 12px;
   border-radius: 6px;
@@ -92,7 +92,7 @@
   border: solid 0.5px rgba(0, 0, 0, 0.2);
   margin-right: 8px;
 }
-.wintools .gray {
+.about_this_mac .wintools .gray {
   width: 12px;
   height: 12px;
   border-radius: 6px;
@@ -100,6 +100,6 @@
   border: solid 0.5px rgba(0, 0, 0, 0.2);
   margin-right: 8px;
 }
-.wintools div:not(.gray):active {
+.about_this_mac .wintools div:not(.gray):active {
   filter: brightness(0.85);
 }/*# sourceMappingURL=index.css.map */
