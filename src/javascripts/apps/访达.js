@@ -224,6 +224,7 @@ import { bringToFront } from "../window.js";
             icon.draggable = false;
 
             const label = document.createElement("span");
+            label.className = "file-label";
             label.textContent = entry.name;
 
             fileItem.appendChild(icon);

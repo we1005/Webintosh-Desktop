@@ -34,19 +34,41 @@
             margin-top: 5px;
         }
 
-        input.inline-rename {
-            width: 92px;
+        .inline-rename {
+            direction: ltr;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 92px;
             margin-top: 5px;
-            font-size: 13px;
-            font-family: "SFPro-Medium", "PingFangSC-Medium";
-            text-align: center;
-            color: #000;
             background: #fff;
             border: 2px solid #3478f6;
             border-radius: 4px;
-            outline: none;
-            padding: 1px 2px;
+            padding: 1px 4px;
             box-sizing: border-box;
+
+            .inline-rename-base {
+                direction: ltr;
+                field-sizing: content;
+                border: none;
+                outline: none;
+                background: transparent;
+                padding: 0;
+                margin: 0;
+                font-size: 13px;
+                font-family: "SFPro-Medium", "PingFangSC-Medium";
+                color: #000;
+                text-align: left;
+                min-width: 8px;
+                max-width: 64px;
+            }
+
+            .inline-rename-ext {
+                font-size: 13px;
+                font-family: "SFPro-Medium", "PingFangSC-Medium";
+                color: #000;
+                white-space: nowrap;
+            }
         }
     }
 }

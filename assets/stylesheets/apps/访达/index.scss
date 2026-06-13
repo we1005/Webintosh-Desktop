@@ -168,7 +168,7 @@
                         border-radius: 6px;
                     }
 
-                    span {
+                    .file-label {
                         background: #3478f6;
                         color: white;
                         border-radius: 3px;
@@ -184,25 +184,47 @@
                     object-fit: contain;
                 }
 
-                span {
+                .file-label {
                     font-size: 12px;
                     color: #333;
                     word-break: break-all;
                     line-height: 1.3;
                 }
 
-                input.inline-rename {
-                    width: 76px;
-                    font-size: 12px;
-                    text-align: center;
-                    color: #000;
+                .inline-rename {
+                    direction: ltr;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    max-width: 78px;
                     background: #fff;
                     border: 2px solid #3478f6;
                     border-radius: 4px;
-                    outline: none;
-                    padding: 1px 2px;
-                    line-height: 1.3;
+                    padding: 1px 3px;
                     box-sizing: border-box;
+
+                    .inline-rename-base {
+                        direction: ltr;
+                        field-sizing: content;
+                        border: none;
+                        outline: none;
+                        background: transparent;
+                        padding: 0;
+                        margin: 0;
+                        font-size: 12px;
+                        color: #000;
+                        text-align: left;
+                        line-height: 1.3;
+                        min-width: 8px;
+                        max-width: 52px;
+                    }
+
+                    .inline-rename-ext {
+                        font-size: 12px;
+                        color: #000;
+                        line-height: 1.3;
+                        white-space: nowrap;
+                    }
                 }
             }
         }
