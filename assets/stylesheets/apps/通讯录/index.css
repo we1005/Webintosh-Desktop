@@ -352,6 +352,10 @@
   justify-content: center;
   z-index: 10;
 }
+/* 关键:hidden 时必须真正隐藏,否则全窗遮罩盖在最上层吞掉所有鼠标点击(整 app 不可交互) */
+.contactsapp .add-overlay[hidden] {
+  display: none;
+}
 .contactsapp .add-dialog {
   width: 320px;
   background: #f4f4f6;

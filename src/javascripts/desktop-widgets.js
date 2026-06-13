@@ -172,8 +172,10 @@ function buildStatsCard() {
         state.cpu = clamp(state.cpu + (Math.random() - 0.5) * 14, 4, 92);
         state.net = clamp(state.net + (Math.random() - 0.5) * 22, 2, 96);
         const perf = window.performance;
-        if (perf && perf.memory && perf.memory.jsHeapSizeLimit) {
-            state.mem = (perf.memory.usedJSHeapSize / perf.memory.jsHeapSizeLimit) * 100;
+        // 用 used/total(已分配堆)更有意义;used/limit 在 Chrome 下恒约 0.1% 会显示 0%。
+        if (perf && perf.memory && perf.memory.totalJSHeapSize) {
+            const ratio = perf.memory.usedJSHeapSize / perf.memory.totalJSHeapSize;
+            state.mem = clamp(ratio * 100, 12, 96);
         } else {
             state.mem = clamp(state.mem + (Math.random() - 0.5) * 8, 20, 88);
         }

@@ -93,6 +93,9 @@
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 10px;
   overflow: hidden;
+  /* 关键:.scroll 是 flex column,卡片默认会被压缩导致 overflow:hidden 裁掉
+     资料卡的姓名/Follow/Message 按钮(且不可点)。flex:none 让卡片保持自然高度。 */
+  flex: none;
 }
 .linkedinapp .card-title {
   margin: 0 0 12px;

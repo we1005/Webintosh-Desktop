@@ -128,7 +128,6 @@
             nm.textContent = c.name;
             row.appendChild(av);
             row.appendChild(nm);
-            row.addEventListener("click", () => selectContact(c.id), { signal: ac.signal });
             listEl.appendChild(row);
         });
     }
@@ -172,6 +171,15 @@
     }
 
     /* ---------- 交互：搜索 ---------- */
+    // 选中联系人:用事件委托 + mousedown(而非每行 click)。
+    // 原因:点击会触发列表重渲染,行元素在 mousedown 与 mouseup 之间被替换,
+    // 导致 click 的 target 回退到 body、永不命中行上的 click 监听。
+    // mousedown 一定先命中行,委托在稳定的 .contact-list 容器上,重渲染后依旧有效。
+    on(listEl, "mousedown", (e) => {
+        const row = e.target.closest(".contact-item");
+        if (row && row.dataset.id) selectContact(row.dataset.id);
+    });
+
     on(searchInput, "input", () => {
         query = searchInput.value;
         const vis = visibleContacts();
