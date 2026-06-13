@@ -11,11 +11,21 @@ import { bringToFront } from "../window.js";
 
     const content = win.querySelector(".main-content");
     const titleEl = win.querySelector(".toolbar .title");
-    const breadcrumbEl = win.querySelector(".toolbar .breadcrumb");
+    const breadcrumbEl = win.querySelector(".breadcrumb");
     const backBtn = win.querySelector(".nav-back");
     const forwardBtn = win.querySelector(".nav-forward");
     const statusEl = win.querySelector(".statusbar .status-text");
     const sidebarItems = win.querySelectorAll(".sidebar-list .item[data-path]");
+    const segBtns = win.querySelectorAll(".view-seg .seg-btn");
+    const sortBtn = win.querySelector(".sort-btn");
+    const shareBtn = win.querySelector(".share-btn");
+    const searchInput = win.querySelector(".search-input");
+
+    /* ---------- 显示方式 / 排序 / 搜索 状态 ---------- */
+    const VIEW_CLASSES = ["view-icon", "view-list", "view-column", "view-gallery"];
+    let viewMode = "icon";   // icon | list | column | gallery
+    let sortKey = "name";    // name | kind
+    let searchQuery = "";
 
     const TEXT_EXT = ["txt", "md", "js", "mjs", "json", "css", "html", "htm", "xml", "yml", "yaml", "csv", "log", "sh", "py", "ts"];
     const isTextFile = name => TEXT_EXT.includes((name.split(".").pop() || "").toLowerCase());
@@ -53,10 +63,64 @@ import { bringToFront } from "../window.js";
             historyIndex = history.length - 1;
         }
         currentPath = path;
+        // 切换目录清空搜索(与 macOS 一致)
+        if (searchQuery) { searchQuery = ""; if (searchInput) searchInput.value = ""; }
         updateNavButtons();
         renderSidebarActive();
         renderBreadcrumb();
         refresh();
+    }
+
+    /* ---------- 显示方式切换(图标/列表/分栏/画廊) ---------- */
+    function applyView() {
+        content.classList.remove(...VIEW_CLASSES);
+        content.classList.add("view-" + viewMode);
+        segBtns.forEach(b => b.classList.toggle("active", b.dataset.view === viewMode));
+    }
+    segBtns.forEach(b => {
+        b.addEventListener("mousedown", e => { e.stopPropagation(); bringToFront(win, "访达"); });
+        b.addEventListener("click", () => {
+            if (viewMode === b.dataset.view) return;
+            viewMode = b.dataset.view;
+            applyView();
+        });
+    });
+
+    /* ---------- 排序菜单 ---------- */
+    sortBtn.addEventListener("mousedown", e => { e.stopPropagation(); bringToFront(win, "访达"); });
+    sortBtn.addEventListener("click", () => {
+        const r = sortBtn.getBoundingClientRect();
+        const mark = k => (sortKey === k ? "  ✓" : "");
+        createContextMenu(r.left, r.bottom + 4, [
+            { label: "名称" + mark("name"), action: () => { sortKey = "name"; refresh(); } },
+            { label: "种类" + mark("kind"), action: () => { sortKey = "kind"; refresh(); } },
+        ]);
+    });
+
+    /* ---------- 共享(拷贝路径) ---------- */
+    shareBtn.addEventListener("mousedown", e => { e.stopPropagation(); bringToFront(win, "访达"); });
+    shareBtn.addEventListener("click", () => {
+        const r = shareBtn.getBoundingClientRect();
+        const sel = content.querySelector(".file-item.selected");
+        const target = sel ? joinPath(currentPath, sel.querySelector(".file-label").textContent) : currentPath;
+        createContextMenu(r.left, r.bottom + 4, [
+            {
+                label: "拷贝路径", action: async () => {
+                    try { await navigator.clipboard.writeText(target); }
+                    catch { /* 剪贴板不可用时忽略 */ }
+                }
+            },
+        ]);
+    });
+
+    /* ---------- 搜索(当前目录实时过滤) ---------- */
+    if (searchInput) {
+        searchInput.addEventListener("mousedown", e => e.stopPropagation());
+        searchInput.addEventListener("keydown", e => e.stopPropagation());
+        searchInput.addEventListener("input", () => {
+            searchQuery = searchInput.value.trim().toLowerCase();
+            refresh();
+        });
     }
 
     backBtn.addEventListener("click", () => {
@@ -162,7 +226,7 @@ import { bringToFront } from "../window.js";
             { type: "separator" },
             {
                 label: "重命名", action: () => {
-                    const labelEl = fileItem.querySelector("span");
+                    const labelEl = fileItem.querySelector(".file-label");
                     startInlineRename(labelEl, {
                         initial: entry.name,
                         isDir: entry.kind === "dir",
@@ -196,16 +260,34 @@ import { bringToFront } from "../window.js";
         }
         if (seq !== refreshSeq || !document.body.contains(win)) return;
 
+        const total = entries.length;
+        // 搜索过滤(当前目录,按名称)
+        if (searchQuery) {
+            entries = entries.filter(e => e.name.toLowerCase().includes(searchQuery));
+        }
+
+        const ext = name => { const i = name.lastIndexOf("."); return i > 0 ? name.slice(i + 1).toLowerCase() : ""; };
         entries.sort((a, b) => {
+            if (sortKey === "kind") {
+                if (a.kind !== b.kind) return a.kind === "dir" ? -1 : 1;
+                const ea = ext(a.name), eb = ext(b.name);
+                if (ea !== eb) return ea.localeCompare(eb);
+                return a.name.localeCompare(b.name, "zh-Hans-CN");
+            }
+            // 名称:文件夹在前,再按名称
             if (a.kind !== b.kind) return a.kind === "dir" ? -1 : 1;
             return a.name.localeCompare(b.name, "zh-Hans-CN");
         });
+
+        const kindLabel = entry => entry.kind === "dir"
+            ? "文件夹"
+            : (ext(entry.name) ? ext(entry.name).toUpperCase() + " 文件" : "文稿");
 
         content.innerHTML = "";
         if (entries.length === 0) {
             const tip = document.createElement("div");
             tip.className = "empty-tip";
-            tip.textContent = "此文件夹为空";
+            tip.textContent = searchQuery ? `未找到与“${searchInput.value.trim()}”匹配的项目` : "此文件夹为空";
             content.appendChild(tip);
         }
         for (const entry of entries) {
@@ -227,8 +309,13 @@ import { bringToFront } from "../window.js";
             label.className = "file-label";
             label.textContent = entry.name;
 
+            const kindEl = document.createElement("span");
+            kindEl.className = "file-kind";
+            kindEl.textContent = kindLabel(entry);
+
             fileItem.appendChild(icon);
             fileItem.appendChild(label);
+            fileItem.appendChild(kindEl);
 
             fileItem.addEventListener("mousedown", e => {
                 e.stopPropagation();
@@ -244,7 +331,9 @@ import { bringToFront } from "../window.js";
 
             content.appendChild(fileItem);
         }
-        statusEl.textContent = `${entries.length} 个项目, 后端: ${vfs.backendName}`;
+        statusEl.textContent = searchQuery
+            ? `${entries.length} / ${total} 个项目, 后端: ${vfs.backendName}`
+            : `${entries.length} 个项目, 后端: ${vfs.backendName}`;
     }
 
     /* ---------- 空白处交互 ---------- */

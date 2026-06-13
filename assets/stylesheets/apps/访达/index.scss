@@ -117,31 +117,125 @@
         flex-direction: column;
         background: #fff;
 
+        // 注意:运行时实际加载 index.css(已包含完整工具栏/路径栏/视图样式);
+        // 此 scss 与 index.css 存在历史性分叉,仅作结构参考。
         .toolbar {
             height: 52px;
             display: flex;
             align-items: center;
-            padding: 0 20px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            gap: 8px;
+            padding: 0 12px;
+            background: rgba(246, 246, 246, 0.72);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 
             .navigation-controls {
                 display: flex;
-                gap: 15px;
-                margin-right: 20px;
-
-                img {
-                    width: 10px;
-                    opacity: 0.5;
-                    filter: invert(1);
-                }
+                gap: 2px;
             }
+
+            .nav-btn,
+            .tb-btn {
+                width: 28px;
+                height: 26px;
+                border: none;
+                background: transparent;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #4a4a4c;
+
+                &:hover { background: rgba(0, 0, 0, 0.07); }
+                &:active { background: rgba(0, 0, 0, 0.13); }
+            }
+
+            .nav-btn:disabled { color: rgba(0, 0, 0, 0.25); }
 
             .title {
                 font-weight: 600;
-                font-size: 14px;
-                flex: 1;
-                // text-align: center;
-                margin-right: 60px;
+                font-size: 15px;
+                color: #1d1d1f;
+                white-space: nowrap;
+                margin: 0 2px 0 4px;
+            }
+
+            .toolbar-spacer { flex: 1; min-width: 8px; }
+
+            .view-seg {
+                display: flex;
+                gap: 2px;
+                padding: 2px;
+                background: rgba(0, 0, 0, 0.06);
+                border-radius: 7px;
+
+                .seg-btn {
+                    width: 28px;
+                    height: 22px;
+                    border: none;
+                    background: transparent;
+                    border-radius: 5px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #5a5a5c;
+
+                    &.active {
+                        background: #fff;
+                        color: #1d1d1f;
+                        box-shadow: 0 0.5px 2px rgba(0, 0, 0, 0.2);
+                    }
+                }
+            }
+
+            .search-field {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                width: 150px;
+                height: 26px;
+                padding: 0 7px;
+                border-radius: 6px;
+                background: rgba(0, 0, 0, 0.06);
+
+                .search-input {
+                    flex: 1;
+                    min-width: 0;
+                    border: none;
+                    outline: none;
+                    background: transparent;
+                    font-size: 12px;
+                    color: #1d1d1f;
+                }
+            }
+        }
+
+        .path-bar {
+            height: 26px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            background: rgba(250, 250, 250, 0.9);
+            overflow: hidden;
+
+            .breadcrumb {
+                display: flex;
+                align-items: center;
+                overflow: hidden;
+                white-space: nowrap;
+
+                .crumb {
+                    font-size: 11px;
+                    color: #777;
+                    padding: 1px 4px;
+                    border-radius: 4px;
+
+                    &:hover { background: rgba(0, 0, 0, 0.06); color: #333; }
+                    &.current { color: #1d1d1f; }
+                }
+
+                .crumb-sep { font-size: 10px; color: #bbb; margin: 0 1px; }
             }
         }
 
@@ -226,6 +320,62 @@
                         white-space: nowrap;
                     }
                 }
+
+                .file-kind { display: none; }
+            }
+
+            // 列表 / 分栏:行式布局
+            &.view-list,
+            &.view-column {
+                display: block;
+                padding: 8px 10px;
+                gap: 0;
+
+                .file-item {
+                    width: 100%;
+                    flex-direction: row;
+                    align-items: center;
+                    text-align: left;
+                    padding: 4px 8px;
+                    border-radius: 6px;
+                    gap: 8px;
+
+                    img { width: 18px; height: 18px; padding: 0; flex-shrink: 0; }
+
+                    .file-label {
+                        flex: 1;
+                        min-width: 0;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        word-break: normal;
+                        max-height: none;
+                    }
+
+                    &:nth-child(odd) { background: rgba(0, 0, 0, 0.025); }
+
+                    &.selected {
+                        background: #3478f6;
+                        img { background: transparent; }
+                        .file-label, .file-kind { color: #fff; background: transparent; }
+                    }
+                }
+            }
+
+            // 分栏视图额外显示种类列
+            &.view-column .file-item .file-kind {
+                display: block;
+                flex-shrink: 0;
+                font-size: 11px;
+                color: #999;
+                margin-left: auto;
+                padding-left: 12px;
+            }
+
+            // 画廊:大图标
+            &.view-gallery .file-item {
+                width: 120px;
+                img { width: 96px; height: 96px; }
             }
         }
     }
