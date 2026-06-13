@@ -9,6 +9,10 @@ const DIR = "./assets/images/wallpapers/";
 
 // 数据与顺序照搬 macOS-react: src/utils/helpers/wallpapers.ts
 const WALLPAPERS = [
+    // 项目自带的原始壁纸(桌面默认就是 Sequoia / Wallpaper.png)——之前漏了,补回
+    { surname: "sequoia", name: "Sequoia", file: "./assets/images/Wallpaper.png", thumb: "./assets/images/Wallpaper.png" },
+    { surname: "sequoia-day", name: "Sequoia 日出", file: "./assets/images/sequoia.shape.day.jpg", thumb: "./assets/images/sequoia.shape.day.jpg" },
+    { surname: "sequoia-night", name: "Sequoia 夜晚", file: "./assets/images/sequoia.shape.night.jpg", thumb: "./assets/images/sequoia.shape.night.jpg" },
     { surname: "ventura", name: "Ventura" },
     { surname: "monterey", name: "Monterey" },
     { surname: "bigsurgraphic", name: "Big Sur Graphic" },
@@ -23,10 +27,11 @@ const WALLPAPERS = [
     { surname: "solargrad", name: "Solar Grad" },
 ];
 
-const fullSrc = s => DIR + s + ".jpg";
-const previewSrc = s => DIR + "preview_" + s + ".jpg";
+// 支持 file/thumb 覆盖(用于项目自带的原始壁纸,如 Sequoia 默认壁纸)
+const fullSrc = w => w.file || (DIR + w.surname + ".jpg");
+const previewSrc = w => w.thumb || (DIR + "preview_" + w.surname + ".jpg");
 // 原版:Catalina 的大预览用 catalina_day.jpg
-const heroSrc = s => (s === "catalina" ? DIR + "catalina_day.jpg" : fullSrc(s));
+const heroSrc = w => w.file || (w.surname === "catalina" ? DIR + "catalina_day.jpg" : fullSrc(w));
 
 /* 实时把桌面背景换掉(平滑淡入),并持久化 */
 export function applyWallpaper(item, { persist = true } = {}) {
@@ -70,7 +75,7 @@ function updateHero(item) {
     if (!win) return;
     const img = win.querySelector(".wp-current");
     const name = win.querySelector(".wp-current-name");
-    if (img && item.surname) img.src = heroSrc(item.surname);
+    if (img && item.surname) { const w = WALLPAPERS.find(x => x.surname === item.surname); img.src = w ? heroSrc(w) : (item.src || img.src); }
     if (name) name.textContent = item.name || "";
 }
 
@@ -90,7 +95,7 @@ function render() {
     win.dataset.bound = "1";
 
     grid.innerHTML = "";
-    const sel = savedSurname() || "catalina";
+    const sel = savedSurname() || "sequoia";
     WALLPAPERS.forEach(w => {
         const cell = document.createElement("div");
         cell.className = "wp-item" + (w.surname === sel ? " selected" : "");
@@ -100,9 +105,9 @@ function render() {
         img.className = "wp-thumb";
         img.alt = w.name;
         img.draggable = false;
-        img.src = previewSrc(w.surname);
+        img.src = previewSrc(w);
         // preview 缺失时回退到主图
-        img.addEventListener("error", () => { if (img.src.indexOf("preview_") !== -1) img.src = fullSrc(w.surname); }, { once: true });
+        img.addEventListener("error", () => { if (img.src.indexOf("preview_") !== -1) img.src = fullSrc(w); }, { once: true });
 
         const label = document.createElement("p");
         label.className = "wp-name";
@@ -110,12 +115,12 @@ function render() {
 
         cell.appendChild(img);
         cell.appendChild(label);
-        cell.addEventListener("click", () => applyWallpaper({ src: fullSrc(w.surname), name: w.name, surname: w.surname }));
+        cell.addEventListener("click", () => applyWallpaper({ src: fullSrc(w), name: w.name, surname: w.surname }));
         grid.appendChild(cell);
     });
 
     // 初始化左侧大预览为当前选中
-    const cur = WALLPAPERS.find(w => w.surname === sel) || WALLPAPERS[4];
+    const cur = WALLPAPERS.find(w => w.surname === sel) || WALLPAPERS[0];
     updateHero(cur);
 }
 
