@@ -2,7 +2,25 @@ import { finderbar } from './finderbar.js';
 import { dock } from './dock.js';
 import { createContextMenu, createDesktopFile } from './ui/contextMenu.js';
 import { startInlineRename } from './ui/inlineRename.js';
+import { initDesktopWidgets } from './desktop-widgets.js';
 import vfs, { joinPath } from '../../os/vfs.js';
+
+// 桌面左上角玻璃小组件卡片(时钟/日历/天气/系统状态)
+initDesktopWidgets();
+
+// 进入桌面后首次交互请求浏览器全屏(macOS 沉浸式;每会话仅一次,失败静默)
+(function enableEnterFullscreen() {
+    try { if (sessionStorage.getItem('webintosh.fs') === '1') return; } catch (e) { return; }
+    const go = () => {
+        try { sessionStorage.setItem('webintosh.fs', '1'); } catch (e) { }
+        const root = document.documentElement;
+        if (!document.fullscreenElement && root.requestFullscreen) {
+            root.requestFullscreen().catch(() => { });
+        }
+        window.removeEventListener('pointerdown', go, true);
+    };
+    window.addEventListener('pointerdown', go, true);
+})();
 
 // 在 /Desktop 下取不重名的名称（扩展名保持在末尾）
 async function uniqueDesktopName(base, ext = '') {

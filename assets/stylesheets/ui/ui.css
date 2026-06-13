@@ -59,11 +59,70 @@
    1. position:absolute —— body 是 flex(space-between)容器，窗口非 absolute
       会变成 flex 子项把 Dock 顶离底部、且 left/top 失效无法拖动。
    2. overflow:hidden + 默认圆角 —— 保证内容(尤其 iframe 应用:音乐/Spotify/
-      虚拟机)被窗口圆角裁切，不会方角溢出。各应用可覆盖 border-radius。 */
+      虚拟机)被窗口圆角裁切，不会方角溢出。各应用可覆盖 border-radius。
+   3. 圆角 11px ≈ macOS Sequoia 窗口；阴影 = 大柔和投影 + 1px 内描边亮边线，
+      更接近真实 macOS 材质。各应用可覆盖 box-shadow/border-radius。 */
 .window {
   position: absolute;
   overflow: hidden;
   border-radius: 11px;
+  box-shadow: 0 22px 70px 0 rgba(0, 0, 0, 0.45), 0 2px 8px 0 rgba(0, 0, 0, 0.22), inset 0 0 0 0.5px rgba(255, 255, 255, 0.12);
+}
+
+/* ---- 窗口侧栏（.left）毛玻璃材质 ----
+   用 blur + saturate 模拟 macOS 侧栏磨砂玻璃；半透明白底承接背景色调。
+   不改尺寸/布局（width/height/flex 由各应用控制）。 */
+.window .left {
+  background: rgba(246, 246, 246, 0.72);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+          backdrop-filter: blur(30px) saturate(180%);
+}
+
+/* ---- 交通灯按钮：整组 hover 时三个圆点同时浮现符号 ----
+   红=✕ 黄=− 绿=⤢(全屏)。用伪元素 content，不动各应用 .red/.yellow/.green
+   自身的背景色与尺寸（12px 圆点）。符号绝对居中、8px、过渡 0.15s。 */
+.window .wintools .red,
+.window .wintools .yellow,
+.window .wintools .green {
+  position: relative;
+}
+.window .wintools .red::after,
+.window .wintools .yellow::after,
+.window .wintools .green::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 700;
+  font-family: "SFPro-Semibold", "Helvetica Neue", Arial, sans-serif;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.window .wintools:hover .red::after {
+  content: "\2715"; /* ✕ 关闭 */
+  color: #4d0000;
+}
+.window .wintools:hover .yellow::after {
+  content: "\2212"; /* − 最小化 */
+  color: #5c4400;
+  font-size: 10px;
+}
+.window .wintools:hover .green::after {
+  content: "\2922"; /* ⤢ 全屏（对角双箭头）*/
+  color: #003d00;
+  font-size: 9px;
+}
+.window .wintools:hover .red::after,
+.window .wintools:hover .yellow::after,
+.window .wintools:hover .green::after {
+  opacity: 1;
 }
 
 /* ---- 窗口交互（拖拽/缩放）期间：屏蔽 iframe 指针事件，

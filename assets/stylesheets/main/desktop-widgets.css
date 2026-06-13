@@ -1,0 +1,165 @@
+/* Desktop glass widget cards (top-left), self-contained.
+   Injected dynamically by src/javascripts/desktop-widgets.js.
+   All layout forced to LTR because the desktop surface uses direction: rtl. */
+
+#desktop-widgets {
+    position: absolute;
+    top: 40px;   /* ~16px below the 24px menu bar */
+    left: 16px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    direction: ltr;            /* override desktop rtl */
+    pointer-events: none;      /* container never blocks the desktop */
+    -webkit-user-select: none;
+    user-select: none;
+    font-family: 'SFPro-Regular', 'PingFang-Regular', -apple-system, system-ui, sans-serif;
+}
+
+#desktop-widgets .dw-card {
+    direction: ltr;
+    pointer-events: auto;      /* cards themselves are interactive */
+    box-sizing: border-box;
+    width: 220px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.22);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    backdrop-filter: blur(30px) saturate(180%);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    transform: translateY(-8px);
+    animation: dw-fade-in 0.45s ease forwards;
+    will-change: transform, opacity;
+}
+
+/* staggered fade-in */
+#desktop-widgets .dw-card:nth-child(1) { animation-delay: 0.05s; }
+#desktop-widgets .dw-card:nth-child(2) { animation-delay: 0.12s; }
+#desktop-widgets .dw-card:nth-child(3) { animation-delay: 0.19s; }
+#desktop-widgets .dw-card:nth-child(4) { animation-delay: 0.26s; }
+
+@keyframes dw-fade-in {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Clock card ---- */
+#desktop-widgets .dw-clock-time {
+    font-size: 42px;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: 0.5px;
+    font-family: 'SFPro-Bold', 'SFPro-Regular', 'PingFang-Semibold', sans-serif;
+}
+#desktop-widgets .dw-clock-time .dw-sec {
+    font-size: 20px;
+    font-weight: 500;
+    opacity: 0.85;
+    margin-left: 2px;
+}
+#desktop-widgets .dw-clock-sub {
+    margin-top: 6px;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+/* ---- Calendar card ---- */
+#desktop-widgets .dw-cal {
+    text-align: center;
+}
+#desktop-widgets .dw-cal-month {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #ff453a;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+#desktop-widgets .dw-cal-day {
+    font-size: 48px;
+    font-weight: 600;
+    line-height: 1.05;
+    margin: 2px 0;
+    font-family: 'SFPro-Bold', 'SFPro-Regular', 'PingFang-Semibold', sans-serif;
+}
+#desktop-widgets .dw-cal-week {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+/* ---- Weather card ---- */
+#desktop-widgets .dw-weather-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+#desktop-widgets .dw-weather-city {
+    font-size: 14px;
+    font-weight: 600;
+}
+#desktop-widgets .dw-weather-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+}
+#desktop-widgets .dw-weather-temp {
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 1.1;
+    margin-top: 4px;
+    font-family: 'SFPro-Bold', 'SFPro-Regular', 'PingFang-Semibold', sans-serif;
+}
+#desktop-widgets .dw-weather-meta {
+    margin-top: 2px;
+    font-size: 12px;
+    opacity: 0.9;
+    display: flex;
+    gap: 10px;
+}
+
+/* ---- Stats card ---- */
+#desktop-widgets .dw-stats-title {
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.95;
+    margin-bottom: 10px;
+}
+#desktop-widgets .dw-stat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 7px 0;
+    font-size: 12px;
+}
+#desktop-widgets .dw-stat-label {
+    flex: 0 0 46px;
+    opacity: 0.9;
+}
+#desktop-widgets .dw-bar {
+    flex: 1 1 auto;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.25);
+    overflow: hidden;
+}
+#desktop-widgets .dw-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #4cd964, #34c759);
+    transition: width 0.6s ease;
+    width: 0%;
+}
+#desktop-widgets .dw-stat-row[data-key="cpu"] .dw-bar-fill { background: linear-gradient(90deg, #5ac8fa, #007aff); }
+#desktop-widgets .dw-stat-row[data-key="mem"] .dw-bar-fill { background: linear-gradient(90deg, #bf5af2, #af52de); }
+#desktop-widgets .dw-stat-row[data-key="net"] .dw-bar-fill { background: linear-gradient(90deg, #ffd60a, #ff9500); }
+#desktop-widgets .dw-stat-val {
+    flex: 0 0 36px;
+    text-align: right;
+    opacity: 0.95;
+    font-variant-numeric: tabular-nums;
+}

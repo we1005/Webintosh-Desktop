@@ -77,6 +77,14 @@ function updateControl() {
     appControl.forEach((control) => {
         let nowControl = document.createElement("img");
         nowControl.src = `./assets/images/${control}.svg`;
+        if (control === "switch.2") {
+            // 控制中心触发图标
+            nowControl.classList.add("control-center-btn");
+            nowControl.addEventListener("click", (e) => {
+                e.stopPropagation();   // 避免被全局 closeAllMenus 的点击吞掉
+                if (window.__toggleControlCenter) window.__toggleControlCenter(e.currentTarget);
+            });
+        }
         appControlContainer.appendChild(nowControl);
     })
 }
