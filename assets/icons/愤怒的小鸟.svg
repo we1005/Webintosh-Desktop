@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50px" height="50px" viewBox="-5.488 -5.488 60.976 60.976" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>愤怒的小鸟</title>
+    <defs>
+        <linearGradient id="abGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FF6A3D"/>
+            <stop offset="100%" stop-color="#E8350F"/>
+        </linearGradient>
+    </defs>
+    <rect fill="url(#abGrad)" x="0" y="0" width="50" height="50" rx="11"/>
+    <!-- 原创「弹弓」几何(游戏机制,非角色形象) -->
+    <g stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" fill="none">
+        <path d="M25 40 V26"/>
+        <path d="M25 26 L17 13"/>
+        <path d="M25 26 L33 13"/>
+        <path d="M16 14 Q25 21 34 14" stroke-opacity="0.7"/>
+    </g>
+    <circle cx="25" cy="22" r="3.4" fill="#FFFFFF"/>
+</svg>

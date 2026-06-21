@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>愤怒的小鸟</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body { background: #16110e; color: #e8e8ea; font-family: -apple-system, "PingFang SC", sans-serif; }
+#setup {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px;
+    background:
+        radial-gradient(60% 50% at 50% 0%, rgba(255,120,40,.18), transparent 70%),
+        radial-gradient(50% 40% at 80% 100%, rgba(255,200,40,.10), transparent 70%),
+        #16110e;
+    overflow-y: auto;
+}
+#setup .glyph { font-size: 52px; }
+#setup h1 { font-size: 22px; }
+#setup .sub { font-size: 13px; color: #b0a89f; max-width: 540px; line-height: 1.75; }
+#setup .sub b { color: #ffb340; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+input[type=url] {
+    height: 38px; width: min(360px, 70vw); padding: 0 12px;
+    border: 1px solid rgba(255,255,255,.18); border-radius: 9px;
+    background: #2a241f; color: #fff; font-size: 13px; font-family: inherit;
+}
+.btn {
+    display: inline-flex; align-items: center; height: 38px; padding: 0 18px;
+    border-radius: 9px; border: 1px solid #ff9f43; background: #e8740f; color: #fff;
+    font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.btn:hover { background: #f5851c; }
+.btn.ghost { background: transparent; border-color: rgba(255,255,255,.22); color: #d8d8dc; }
+.btn.ghost:hover { background: rgba(255,255,255,.08); }
+.sep { font-size: 12px; color: #6c655d; }
+#status { font-size: 12.5px; color: #b0a89f; min-height: 18px; }
+.hint { font-size: 11.5px; color: #7a736b; max-width: 540px; line-height: 1.6; }
+#frame-wrap { position: fixed; inset: 0; display: none; background: #000; }
+#frame-wrap iframe { width: 100%; height: 100%; border: none; display: block; }
+</style>
+</head>
+<body>
+<div id="setup">
+    <div class="glyph">🐦</div>
+    <h1>愤怒的小鸟 · BYO 启动器</h1>
+    <div class="sub">
+        本启动器<b>不含任何游戏素材</b>。请载入<b>你自己持有的</b>网页版游戏:
+        既可载入本地打包好的 <b>ZIP</b>(里面是网页版的 index.html 及其资源),
+        也可填入你自己托管的 <b>URL</b>。游戏只在你本机加载与运行。
+    </div>
+
+    <div class="row">
+        <input type="url" id="url" placeholder="https://… 你自己托管的 index.html 地址">
+        <button class="btn" id="open-url">打开 URL</button>
+    </div>
+    <div class="sep">— 或 —</div>
+    <div class="row">
+        <label class="btn">载入本地 ZIP(网页版打包)
+            <input type="file" id="zip" accept=".zip" style="display:none">
+        </label>
+        <button class="btn ghost" id="resume" style="display:none">继续上次导入的游戏</button>
+        <button class="btn ghost" id="clear" style="display:none">清除已导入</button>
+    </div>
+
+    <div id="status"></div>
+    <div class="hint">
+        ZIP 模式:解压后通过本地 Service Worker 挂载到 <code>./play/</code> 运行,数据留在你浏览器里。<br>
+        若游戏用的是站点根绝对路径(如 <code>/images/…</code>)而非相对路径,可能需要 URL 模式或自行托管。
+    </div>
+</div>
+<div id="frame-wrap"><iframe id="frame" title="愤怒的小鸟" allow="autoplay; fullscreen; gamepad; pointer-lock"></iframe></div>
+
+<script type="module">
+import JSZip from 'https://cdn.skypack.dev/jszip@3.10.1';
+
+const CACHE = 'ab-game-v1';
+const PLAY_BASE = new URL('./play/', location.href).href; // 绝对前缀
+const status = document.getElementById('status');
+const setStatus = (t) => { status.textContent = t; };
+
+const MIME = {
+    html: 'text/html', htm: 'text/html', js: 'text/javascript', mjs: 'text/javascript',
+    css: 'text/css', json: 'application/json', wasm: 'application/wasm', xml: 'application/xml',
+    png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp',
+    svg: 'image/svg+xml', ico: 'image/x-icon', bmp: 'image/bmp',
+    mp3: 'audio/mpeg', ogg: 'audio/ogg', wav: 'audio/wav', m4a: 'audio/mp4', aac: 'audio/aac',
+    mp4: 'video/mp4', webm: 'video/webm',
+    woff: 'font/woff', woff2: 'font/woff2', ttf: 'font/ttf', otf: 'font/otf', eot: 'application/vnd.ms-fontobject',
+    txt: 'text/plain', map: 'application/json', atlas: 'text/plain', fnt: 'text/plain',
+};
+const mimeOf = (p) => MIME[(p.split('.').pop() || '').toLowerCase()] || 'application/octet-stream';
+
+let swReady = navigator.serviceWorker
+    ? navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready)
+    : Promise.reject(new Error('此浏览器不支持 Service Worker'));
+
+function play() {
+    document.getElementById('setup').style.display = 'none';
+    const wrap = document.getElementById('frame-wrap');
+    wrap.style.display = 'block';
+    document.getElementById('frame').src = PLAY_BASE + 'index.html';
+}
+
+// URL 模式:直接 iframe 用户托管地址(取决于对方是否允许被嵌套)
+document.getElementById('open-url').addEventListener('click', () => {
+    const u = document.getElementById('url').value.trim();
+    if (!u) { setStatus('请先填入 URL'); return; }
+    try { localStorage.setItem('ab.url', u); } catch (e) {}
+    document.getElementById('setup').style.display = 'none';
+    const wrap = document.getElementById('frame-wrap');
+    wrap.style.display = 'block';
+    document.getElementById('frame').src = u;
+});
+
+// ZIP 模式:解压 → 写入 Cache → SW 挂载到 ./play/ → iframe
+document.getElementById('zip').addEventListener('change', async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try {
+        await swReady;
+        setStatus('正在解压…');
+        const zip = await JSZip.loadAsync(await f.arrayBuffer());
+        const paths = Object.keys(zip.files).filter((p) => !zip.files[p].dir);
+        // 找到最浅的 index.html 作为站点根,剥离其前缀
+        const indexes = paths.filter((p) => /(^|\/)index\.html?$/i.test(p)).sort((a, b) => a.split('/').length - b.split('/').length);
+        if (!indexes.length) { setStatus('ZIP 里没找到 index.html'); return; }
+        const root = indexes[0].replace(/index\.html?$/i, ''); // 形如 "" 或 "AngryBirds/"
+
+        const cache = await caches.open(CACHE);
+        let n = 0;
+        for (const p of paths) {
+            if (root && p.indexOf(root) !== 0) continue; // 只收根目录树下的文件
+            const rel = p.slice(root.length);
+            if (!rel) continue;
+            const bytes = await zip.files[p].async('uint8array');
+            await cache.put(PLAY_BASE + rel, new Response(bytes, { headers: { 'Content-Type': mimeOf(rel) } }));
+            n++;
+            if (n % 25 === 0) setStatus(`正在挂载… ${n} 个文件`);
+        }
+        try { localStorage.setItem('ab.imported', '1'); } catch (e2) {}
+        setStatus(`完成,共 ${n} 个文件,启动中…`);
+        play();
+    } catch (err) {
+        setStatus('载入失败:' + (err && err.message ? err.message : err));
+        console.error(err);
+    }
+});
+
+// 继续上次 / 清除
+(async function initResume() {
+    try {
+        const cache = await caches.open(CACHE);
+        const has = await cache.match(PLAY_BASE + 'index.html');
+        if (has) {
+            document.getElementById('resume').style.display = 'inline-flex';
+            document.getElementById('clear').style.display = 'inline-flex';
+        }
+    } catch (e) {}
+    const lastUrl = (() => { try { return localStorage.getItem('ab.url'); } catch (e) { return null; } })();
+    if (lastUrl) document.getElementById('url').value = lastUrl;
+})();
+
+document.getElementById('resume').addEventListener('click', async () => { await swReady; play(); });
+document.getElementById('clear').addEventListener('click', async () => {
+    try { await caches.delete(CACHE); localStorage.removeItem('ab.imported'); } catch (e) {}
+    setStatus('已清除导入的游戏');
+    document.getElementById('resume').style.display = 'none';
+    document.getElementById('clear').style.display = 'none';
+});
+</script>
+</body>
+</html>
