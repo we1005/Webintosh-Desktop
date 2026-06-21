@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50px" height="50px" viewBox="-5.488 -5.488 60.976 60.976" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>反恐精英 1.6</title>
+    <defs>
+        <linearGradient id="csGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3A3D44"/>
+            <stop offset="100%" stop-color="#16181C"/>
+        </linearGradient>
+    </defs>
+    <rect fill="url(#csGrad)" x="0" y="0" width="50" height="50" rx="11"/>
+    <!-- 通用瞄准准星(原创几何) -->
+    <circle cx="25" cy="25" r="11" fill="none" stroke="#FF9F2E" stroke-width="2.4"/>
+    <g stroke="#FF9F2E" stroke-width="2.4" stroke-linecap="round">
+        <path d="M25 8 V16"/>
+        <path d="M25 34 V42"/>
+        <path d="M8 25 H16"/>
+        <path d="M34 25 H42"/>
+    </g>
+    <circle cx="25" cy="25" r="2.2" fill="#FF9F2E"/>
+</svg>

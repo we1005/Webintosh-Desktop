@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>反恐精英 1.6</title>
+<script>
+/* 多线程/SAB:仅当作为顶层标签时注册 coi-serviceworker(全速模式);
+ * 嵌在桌面窗口时跳过,避免非隔离父页下反复刷新。 */
+window.coi = { coepCredentialless: () => true, quiet: true };
+if (window.top === window.self) {
+    const sw = document.createElement('script');
+    sw.src = './coi-serviceworker.js';
+    document.head.appendChild(sw);
+}
+</script>
+<!-- Xash3D-FWGS 引擎(GPL,来自 jsDelivr CDN);本仓库不含任何 Valve 游戏数据 -->
+<script src="https://cdn.jsdelivr.net/npm/xash3d-fwgs@latest/dist/raw.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body { background: #0e0f12; color: #e8e8ea; font-family: -apple-system, "PingFang SC", sans-serif; }
+canvas { width: 100vw; height: 100vh; top: 0; left: 0; position: fixed; display: none; background: #000; }
+#setup {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px; text-align: center; padding: 24px;
+    background:
+        radial-gradient(60% 50% at 50% 0%, rgba(255,140,40,.16), transparent 70%),
+        radial-gradient(50% 40% at 80% 100%, rgba(40,120,255,.12), transparent 70%),
+        #0e0f12;
+}
+#setup .glyph { font-size: 54px; }
+#setup h1 { font-size: 22px; }
+#setup .sub { font-size: 13px; color: #9a9aa0; max-width: 520px; line-height: 1.75; }
+#setup .sub b { color: #ffb340; }
+.filebtn {
+    display: inline-flex; align-items: center; height: 40px; padding: 0 20px;
+    border: 1px solid #ff9f43; border-radius: 9px; background: #e8740f; color: #fff;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.filebtn:hover { background: #f5851c; }
+#status { font-size: 12.5px; color: #8a8a90; min-height: 18px; }
+.hint { font-size: 11.5px; color: #6c6c72; max-width: 520px; line-height: 1.6; }
+#perf { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; padding: 5px 11px; border-radius: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
+#perf .dot { width: 8px; height: 8px; border-radius: 50%; }
+#perf .dot.on { background: #28c840; box-shadow: 0 0 6px #28c840; }
+#perf .dot.off { background: #ff9f0a; }
+#fullspeed { display: none; height: 32px; padding: 0 14px; border-radius: 8px; border: 1px solid rgba(120,200,255,.4); background: rgba(40,120,255,.18); color: #cfe6ff; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="setup">
+    <div class="glyph">🔫</div>
+    <h1>反恐精英 1.6</h1>
+    <div class="sub">
+        基于开源引擎 <b>Xash3D-FWGS</b>(GoldSrc 重写实现,引擎来自 cdn.jsdelivr.net)。<br>
+        请载入<b>你自己持有的</b> Half-Life/CS 数据:把安装目录里的 <b>valve</b> 与 <b>cstrike</b>
+        两个文件夹打包成一个 <b>valve.zip</b>(zip 根目录下直接是这两个文件夹),然后选择它即可开玩。
+    </div>
+    <label class="filebtn">选择 valve.zip 开玩
+        <input type="file" id="zip" accept=".zip" style="display:none">
+    </label>
+    <div id="status"></div>
+    <div id="perf"><span class="dot off" id="perf-dot"></span><span id="perf-text">检测多线程…</span></div>
+    <button id="fullspeed">🚀 全速模式(新标签打开)</button>
+    <div class="hint">
+        引擎/客户端 wasm 来自 xash3d-fwgs / cs16-client(jsDelivr,需联网)· 仅请使用合法持有的游戏数据。<br>
+        单人:进菜单 Create Server 加机器人。联机需配置 ws_proxy(cs1.6-browser 的 server.py + config.json),后续可加。
+    </div>
+</div>
+<canvas id="canvas"></canvas>
+
+<script type="module">
+import JSZip from 'https://cdn.skypack.dev/jszip@3.10.1';
+
+const isolated = !!window.crossOriginIsolated;
+(function () {
+    const dot = document.getElementById('perf-dot');
+    const txt = document.getElementById('perf-text');
+    const fs = document.getElementById('fullspeed');
+    if (isolated) { dot.className = 'dot on'; txt.textContent = '多线程已启用(crossOriginIsolated)'; }
+    else {
+        dot.className = 'dot off'; txt.textContent = '单线程模式';
+        if (window.top !== window.self) fs.style.display = 'inline-flex';
+    }
+    fs.addEventListener('click', () => window.open(location.href, '_blank', 'noopener'));
+})();
+
+const status = document.getElementById('status');
+
+document.getElementById('zip').addEventListener('change', async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try {
+        status.textContent = '正在解压 valve.zip…';
+        const files = {};
+        const zip = await JSZip.loadAsync(await f.arrayBuffer());
+        const entries = Object.keys(zip.files);
+        for (const p of entries) {
+            const entry = zip.files[p];
+            if (entry.dir) continue;
+            files[`/rodir/${p}`] = await entry.async('uint8array');
+        }
+        status.textContent = '正在拉取引擎与客户端 wasm…';
+        const extras = await (await fetch('https://cdn.jsdelivr.net/npm/cs16-client@latest/dist/cstrike/extras.pk3')).arrayBuffer();
+
+        document.getElementById('setup').style.display = 'none';
+        document.getElementById('canvas').style.display = 'block';
+        document.title = '反恐精英 1.6';
+
+        // eslint-disable-next-line no-undef
+        Xash3D({
+            arguments: ['-windowed', '-game', 'cstrike', '+_vgui_menus', '0', '-ref', 'webgl2'],
+            canvas: document.getElementById('canvas'),
+            dynamicLibraries: [
+                'filesystem_stdio.wasm',
+                'libref_webgl2.wasm',
+                'cl_dlls/menu_emscripten_wasm32.wasm',
+                'dlls/cs_emscripten_wasm32.wasm',
+                'cl_dlls/client_emscripten_wasm32.wasm',
+                '/rodir/filesystem_stdio.wasm',
+            ],
+            onRuntimeInitialized() {
+                Object.keys(files).forEach((k) => {
+                    const dir = k.split('/').slice(0, -1).join('/');
+                    this.FS.mkdirTree(dir);
+                    this.FS.writeFile(k, files[k]);
+                });
+                this.FS.writeFile('/rodir/cstrike/extras.pk3', new Uint8Array(extras));
+                this.FS.mkdir('/rwdir');
+                this.FS.chdir('/rodir');
+            },
+            locateFile(p) {
+                const base = 'https://cdn.jsdelivr.net/npm/xash3d-fwgs@latest/dist/';
+                const cs = 'https://cdn.jsdelivr.net/npm/cs16-client@latest/dist/cstrike/';
+                switch (p) {
+                    case 'xash.wasm': return base + 'xash.wasm';
+                    case '/rodir/filesystem_stdio.wasm':
+                    case 'filesystem_stdio.wasm': return base + 'filesystem_stdio.wasm';
+                    case 'libref_webgl2.wasm': return base + 'libref_webgl2.wasm';
+                    case 'cl_dlls/menu_emscripten_wasm32.wasm': return cs + 'cl_dlls/menu_emscripten_wasm32.wasm';
+                    case 'dlls/cs_emscripten_wasm32.wasm': return cs + 'dlls/cs_emscripten_wasm32.wasm';
+                    case 'cl_dlls/client_emscripten_wasm32.wasm': return cs + 'cl_dlls/client_emscripten_wasm32.wasm';
+                    default: return p;
+                }
+            },
+        });
+    } catch (err) {
+        status.textContent = '加载失败:' + (err && err.message ? err.message : err);
+        console.error(err);
+    }
+});
+</script>
+</body>
+</html>

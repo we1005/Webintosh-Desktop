@@ -8,6 +8,7 @@ let apps = [
     "博客", "视频", "语音备忘录", "天气", "股市", "图书", "时钟",
     "计算器", "无边记", "家庭", "Siri", "iPhone镜像", "密码", "系统设置", "壁纸",
     "Python 实验室", "AI 工具箱", "JupyterLite", "Typora", "复古游戏厅", "泡泡堂",
+    "植物大战僵尸", "反恐精英",
     "GitHub", "LinkedIn", "关于我", "Google",
     "Music-Player", "Calculator", "VS Code", "其他"
 ];

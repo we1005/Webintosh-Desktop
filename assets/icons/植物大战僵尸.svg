@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50px" height="50px" viewBox="-5.488 -5.488 60.976 60.976" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>植物大战僵尸</title>
+    <defs>
+        <linearGradient id="pvzGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#5FBF3C"/>
+            <stop offset="100%" stop-color="#2E8B2E"/>
+        </linearGradient>
+    </defs>
+    <rect fill="url(#pvzGrad)" x="0" y="0" width="50" height="50" rx="11"/>
+    <!-- 豌豆射手风格:白色嫩芽(茎 + 两片叶 + 顶端豆荚),原创几何,非游戏美术 -->
+    <path d="M25 39 V22" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+    <path d="M25 30 C19 30 15 27 14 22 C20 22 24 25 25 30 Z" fill="#FFFFFF" fill-opacity="0.92"/>
+    <path d="M25 27 C31 27 35 24 36 19 C30 19 26 22 25 27 Z" fill="#FFFFFF" fill-opacity="0.92"/>
+    <circle cx="25" cy="16.5" r="6.5" fill="#FFFFFF"/>
+    <circle cx="27.2" cy="15" r="1.6" fill="url(#pvzGrad)"/>
+</svg>
