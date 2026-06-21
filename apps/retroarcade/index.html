@@ -4,6 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>复古游戏厅</title>
+<script>
+/* ---- 多线程 WASM 提速:让静态服务也能 crossOriginIsolated ----
+ * PSP(PPSSPP)单线程很慢;多线程需要 SharedArrayBuffer,而 SAB 需要
+ * crossOriginIsolated(COOP/COEP)。coi-serviceworker 在客户端补上这两个头。
+ * 但 iframe 只有在「整条链路到顶层都隔离」时才能 SAB —— 桌面顶层未隔离,
+ * 故仅当本页作为【顶层标签】时才注册 SW(= 全速模式);嵌在桌面窗口里时
+ * 跳过,优雅降级为单线程,避免在非隔离父页下反复刷新。 */
+window.coi = { coepCredentialless: () => true, quiet: true };
+if (window.top === window.self) {
+    const sw = document.createElement('script');
+    sw.src = './coi-serviceworker.js';
+    document.head.appendChild(sw);
+}
+</script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 100%; height: 100%; overflow: hidden; }
@@ -19,7 +33,7 @@ body { display: flex; flex-direction: column; background: #141416; color: #e8e8e
 }
 #setup .glyph { font-size: 56px; }
 #setup h1 { font-size: 22px; }
-#setup .sub { font-size: 13px; color: #9a9aa0; max-width: 460px; line-height: 1.7; }
+#setup .sub { font-size: 13px; color: #9a9aa0; max-width: 480px; line-height: 1.7; }
 #setup .sub b { color: #ffd60a; }
 .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
 select, .filebtn {
@@ -29,7 +43,22 @@ select, .filebtn {
 }
 .filebtn { display: inline-flex; align-items: center; background: #e8458b; border-color: #ff66a3; font-weight: 600; }
 .filebtn:hover { background: #f0589a; }
-.hint { font-size: 11.5px; color: #77777d; }
+.hint { font-size: 11.5px; color: #77777d; max-width: 480px; line-height: 1.6; }
+/* 性能状态条 */
+#perf {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; padding: 6px 12px; border-radius: 8px;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+}
+#perf .dot { width: 8px; height: 8px; border-radius: 50%; }
+#perf .dot.on { background: #28c840; box-shadow: 0 0 6px #28c840; }
+#perf .dot.off { background: #ff9f0a; }
+#fullspeed {
+    display: none; height: 34px; padding: 0 14px; border-radius: 8px;
+    border: 1px solid rgba(120,200,255,.4); background: rgba(40,120,255,.18);
+    color: #cfe6ff; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+#fullspeed:hover { background: rgba(40,120,255,.3); }
 #game-wrap { flex: 1; min-height: 0; display: none; position: relative; }
 #game { width: 100%; height: 100%; }
 </style>
@@ -40,8 +69,8 @@ select, .filebtn {
     <h1>复古游戏厅</h1>
     <div class="sub">
         基于 <b>EmulatorJS</b>(RetroArch 核心编译为 WebAssembly),在浏览器里运行
-        NES / SNES / GB / GBA / MD 等主机游戏。<br>
-        选择主机类型,然后载入<b>你自己拥有的</b> ROM 文件即可开玩(支持 .nes/.sfc/.gb/.gba/.md/.zip)。
+        NES / SNES / GB / GBA / MD / <b>PSP</b> 等主机游戏。<br>
+        选择主机类型,然后载入<b>你自己拥有的</b> ROM 文件即可开玩。
     </div>
     <div class="controls">
         <select id="core">
@@ -53,17 +82,45 @@ select, .filebtn {
             <option value="arcade">街机 (MAME)</option>
             <option value="n64">N64</option>
             <option value="psx">PlayStation</option>
+            <option value="psp">PSP (PPSSPP)</option>
         </select>
         <label class="filebtn">载入 ROM 开玩
-            <input type="file" id="rom" style="display:none">
+            <input type="file" id="rom" accept=".nes,.sfc,.smc,.gb,.gbc,.gba,.md,.bin,.gen,.smd,.z64,.n64,.v64,.iso,.cso,.pbp,.chd,.zip,.7z" style="display:none">
         </label>
     </div>
-    <div class="hint">模拟器内核来自 cdn.emulatorjs.org(需联网)· 仅请使用合法持有或公有领域的 ROM</div>
+    <div id="perf">
+        <span class="dot off" id="perf-dot"></span>
+        <span id="perf-text">检测多线程加速中…</span>
+    </div>
+    <button id="fullspeed">🚀 全速模式(在新标签打开,开启多线程)</button>
+    <div class="hint">
+        模拟器内核来自 cdn.emulatorjs.org(需联网)· 仅请使用合法持有或公有领域的 ROM。<br>
+        <b>PSP 提速</b>:用「全速模式」开启多线程;游戏内菜单把「内部分辨率」设为 1x、按需开「跳帧」最有效。
+        CSO 是压缩 ISO,能载入但解压吃 CPU——追求帧率请用未压缩 ISO。
+    </div>
 </div>
 
 <div id="game-wrap"><div id="game"></div></div>
 
 <script>
+const isolated = !!window.crossOriginIsolated;
+// 性能状态展示
+(function () {
+    const dot = document.getElementById('perf-dot');
+    const txt = document.getElementById('perf-text');
+    const fs = document.getElementById('fullspeed');
+    if (isolated) {
+        dot.className = 'dot on';
+        txt.textContent = '多线程已启用(crossOriginIsolated)— PSP 全速';
+    } else {
+        dot.className = 'dot off';
+        txt.textContent = '单线程模式 — PSP 可能偏慢';
+        // 嵌在桌面窗口里:提供「新标签全速」入口(顶层页才能多线程)
+        if (window.top !== window.self) fs.style.display = 'inline-flex';
+    }
+    fs.addEventListener('click', () => window.open(location.href, '_blank', 'noopener'));
+})();
+
 document.getElementById('rom').addEventListener('change', e => {
     const f = e.target.files[0];
     if (!f) return;
@@ -78,6 +135,8 @@ document.getElementById('rom').addEventListener('change', e => {
     window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
     window.EJS_language = 'zh-CN';
     window.EJS_startOnLoaded = true;
+    // 仅在 crossOriginIsolated(全速模式)下启用多线程,否则保持单线程兼容
+    window.EJS_threads = isolated;
 
     const s = document.createElement('script');
     s.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
